@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: sleeping-queens-backend
+    ports:
+      - "5000:5000" # Optional: if you want to access API directly for debug
+    environment:
+      - FLASK_ENV=production
+
+  frontend:
+    build: ./client
+    container_name: sleeping-queens-frontend
+    ports:
+      - "80:80" # This is the main entry point (http://localhost)
+    depends_on:
+      - backend
