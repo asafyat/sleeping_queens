@@ -1,4 +1,3 @@
-# game_engine.py
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Tuple
 import uuid
@@ -40,6 +39,9 @@ class GameState:
     
     # State for Rose Queen Bonus
     pending_rose_wake: bool = False
+    
+    # --- NEW: Store API Key for AI features ---
+    api_key: Optional[str] = None
 
 
 # -----------------------------------------------------------------------------
@@ -55,6 +57,7 @@ def _build_deck() -> List[Card]:
         ("Sunflower Queen", 10), ("Rainbow Queen", 10), ("Moon Queen", 10),
         ("Star Queen", 10), ("Heart Queen", 15), ("Pancake Queen", 15),
         ("Ice Cream Queen", 20),
+        ("Fire Queen", 20), ("Book Queen", 10) 
     ]
     for name, val in queens_data:
         cards.append(Card(id=str(uuid.uuid4()), type="queen", value=val, name=name))
@@ -315,10 +318,11 @@ def _handle_jester(game: GameState, player: Player) -> Tuple[str, bool]:
 # Main Game Management
 # -----------------------------------------------------------------------------
 
-def create_new_game() -> GameState:
+def create_new_game(api_key: Optional[str] = None) -> GameState:
     deck = _build_deck()
     game_id = str(uuid.uuid4())
-    return GameState(id=game_id, deck=deck)
+    # --- NEW: Pass api_key to GameState constructor ---
+    return GameState(id=game_id, deck=deck, api_key=api_key)
 
 def add_player(game: GameState, name: str) -> Player:
     pid = str(uuid.uuid4())

@@ -1,12 +1,16 @@
-# storage.py
-from typing import Dict, List
+from typing import Dict, List, Optional
 from game_engine import GameState, create_new_game
 
 _games: Dict[str, GameState] = {}
 
 
-def create_game() -> GameState:
-    game = create_new_game()
+def create_game(api_key: Optional[str] = None) -> GameState:
+    """
+    Creates a new game, optionally storing an API key for AI features.
+    """
+    # Pass the api_key to the game engine's creation function
+    # Note: You must also update create_new_game() in game_engine.py to accept this argument!
+    game = create_new_game(api_key=api_key)
     _games[game.id] = game
     return game
 
