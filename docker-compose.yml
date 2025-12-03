@@ -14,5 +14,6 @@ services:
     container_name: sleeping-queens-frontend
     ports:
       - "80:80" # This is the main entry point (http://localhost)
+      - "443:443"
     depends_on:
       - backend

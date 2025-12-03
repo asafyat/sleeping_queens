@@ -14,15 +14,23 @@ RUN npm run build
 # --- Stage 2: Serve with Nginx ---
 FROM nginx:alpine
 
+# 1. Create the directory for certificates
+RUN mkdir -p /etc/nginx/certs
+
+# 2. COPY the certificates from your computer into the image
+# (Ensure these files exist in the client/ folder before building)
+COPY nginx-selfsigned.crt /etc/nginx/certs/nginx-selfsigned.crt
+COPY nginx-selfsigned.key /etc/nginx/certs/nginx-selfsigned.key
+
 # Copy built static files from previous stage
-# Note: 'dist' is for Vite. If using CRA, change to 'build'
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy custom Nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
+# Expose ports
 EXPOSE 80
+EXPOSE 443
 
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
