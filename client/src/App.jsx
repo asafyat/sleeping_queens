@@ -1059,19 +1059,56 @@ export default function App() {
   // Helper to get turn player name
   const turnPlayerName = gameState?.players?.find(p => p.id === gameState.turnPlayerId)?.name;
 
-  if (view === 'lobby') {
+if (view === 'lobby') {
     return (
         <div className={`app-container ${isKidMode ? 'theme-kid' : 'theme-default'} ${language === 'he' ? 'rtl' : ''}`}>
             <style>{styles}</style>
             <div className="lobby-card">
+                {/* --- TOGGLE BUTTONS (ADDED) --- */}
+                <button className="toggle-lang" onClick={toggleLanguage}>
+                    {t.toggleLang}
+                </button>
+                
+                <button className="toggle-kid-mode" onClick={() => setIsKidMode(!isKidMode)}>
+                    {isKidMode ? t.normalMode : t.kidMode}
+                </button>
+                {/* ----------------------------- */}
+
                 <h1 className="lobby-title">{isKidMode ? t.kidTitle : t.appTitle}</h1>
-                <div className="input-group"><input className="styled-input" placeholder={isKidMode ? t.kidName : t.enterName} value={playerName} onChange={e => setPlayerName(e.target.value)} /></div>
+                <div className="lobby-subtitle">{isKidMode ? t.kidSubtitle : t.lobbySubtitle}</div>
+
+                <div className="input-group">
+                    <input className="styled-input" placeholder={isKidMode ? t.kidName : t.enterName} value={playerName} onChange={e => setPlayerName(e.target.value)} />
+                </div>
+                
                 <button className="action-btn btn-create" onClick={createGame}>{isKidMode ? t.kidCreate : t.createGame}</button>
+                
                 <div className="divider">{t.orJoin}</div>
-                <div className="input-group"><input className="styled-input" placeholder={t.pasteRoom} value={roomId} onChange={e => setRoomId(e.target.value)} /></div>
+                
+                <div className="input-group">
+                    <input className="styled-input" placeholder={t.pasteRoom} value={roomId} onChange={e => setRoomId(e.target.value)} />
+                </div>
+                
                 <button className="action-btn btn-join" onClick={() => joinGame()}>{isKidMode ? t.kidJoin : t.joinGame}</button>
                 
-                {/* --- NEW: ROOM LIST --- */}
+                {/* API KEY INPUT */}
+                <div className="input-group" style={{marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '15px'}}>
+                    <div style={{position: 'relative'}}>
+                        <input 
+                            className="styled-input" 
+                            type="password" 
+                            placeholder={t.enterKey} 
+                            value={apiKey} 
+                            onChange={e => saveApiKey(e.target.value)}
+                            style={{fontSize: '14px', paddingRight: language === 'he' ? '14px' : '40px', paddingLeft: language === 'he' ? '40px' : '14px'}} 
+                        />
+                        <div style={{position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: language === 'he' ? 'auto' : '10px', left: language === 'he' ? '10px' : 'auto', color: '#999'}}>
+                            <Key size={18} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* ROOM LIST */}
                 <div className="rooms-list">
                     <div className="rooms-header">
                         <span>{t.availableRooms}</span>
