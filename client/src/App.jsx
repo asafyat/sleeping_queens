@@ -1147,7 +1147,26 @@ if (view === 'lobby') {
                 {!gameState.started && <button className="start-btn" onClick={startGame}>{t.startGame}</button>}
                 
                 {/* Desktop Buttons */}
-                <div className="hidden md:flex gap-2">
+                <div className="hidden md:flex items-center gap-2">
+                    
+                  {/* --- NEW NICER SLIDING TOGGLE --- */}
+                  <div 
+                      className={`lang-switch-container ${language}`} 
+                      onClick={toggleLanguage} 
+                      title={t.toggleLang}
+                      role="button"
+                      tabIndex={0}
+                  >
+                      <div className="lang-switch-track">
+                          <span>EN</span>
+                          <span>עב</span>
+                      </div>
+                      <div className="lang-switch-slider">
+                          {language === 'he' ? '🇮🇱' : '🇺🇸'}
+                      </div>
+                  </div>
+                  {/* -------------------------------- */}
+
                   <button onClick={handleLogout} className="p-2 bg-gray-200 rounded hover:bg-gray-300" title={t.logout}>
                     <LogOut size={18} />
                   </button>
@@ -1301,20 +1320,28 @@ if (view === 'lobby') {
       {isMenuOpen && (
         <div className="modal-overlay" onClick={() => setIsMenuOpen(false)}>
           <div className="bg-white absolute top-0 right-0 h-full w-64 shadow-xl p-6" onClick={e => e.stopPropagation()}>
-             <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold">{t.appTitle}</h2>
                 <button onClick={() => setIsMenuOpen(false)}><X /></button>
-             </div>
-             <div className="flex flex-col gap-4">
+            </div>
+            <div className="flex flex-col gap-4">
+                
+                {/* --- NEW LANGUAGE TOGGLE IN MENU --- */}
+                <button onClick={() => { setIsMenuOpen(false); toggleLanguage(); }} className="flex items-center gap-2 p-3 bg-blue-50 text-blue-800 rounded-lg hover:bg-blue-100 text-left">
+                  <span style={{fontSize: '1.2rem'}}>🌐</span>
+                  <span>{t.toggleLang}</span>
+                </button>
+                {/* ----------------------------------- */}
+
                 <button onClick={() => { setIsMenuOpen(false); handleLogout(); }} className="flex items-center gap-2 p-3 bg-gray-100 rounded-lg hover:bg-gray-200 text-left">
-                   <LogOut size={20} />
-                   <span>{t.logout}</span>
+                  <LogOut size={20} />
+                  <span>{t.logout}</span>
                 </button>
                 <button onClick={() => { setIsMenuOpen(false); handleTerminate(); }} className="flex items-center gap-2 p-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-left">
-                   <Trash2 size={20} />
-                   <span>{t.terminate}</span>
+                  <Trash2 size={20} />
+                  <span>{t.terminate}</span>
                 </button>
-             </div>
+            </div>
           </div>
         </div>
       )}

@@ -80,3 +80,61 @@ body {
 .ltr {
   direction: ltr;
 }
+
+.lang-switch-container {
+  position: relative;
+  width: 68px;
+  height: 34px;
+  background: #e9ecef;
+  border-radius: 17px;
+  padding: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  border: 1px solid #d1d5db;
+  margin-right: 8px; /* Spacing from other buttons */
+}
+/* Change track color slightly based on language */
+.lang-switch-container.he { background: #e3f2fd; } /* Light blue tint for Hebrew */
+.lang-switch-container.en { background: #fce4ec; } /* Light pink tint for English */
+
+.lang-switch-track {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #6b7280;
+  pointer-events: none; /* Text shouldn't catch clicks */
+  z-index: 1;
+}
+
+.lang-switch-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 28px;
+  height: 28px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  z-index: 2;
+}
+
+/* Move the slider when language is Hebrew */
+.rtl .lang-switch-slider {
+  transform: translateX(34px);
+}
+/* In RTL mode, we need to flip the track text visually so EN is still left */
+.rtl .lang-switch-track {
+   flex-direction: row-reverse;
+}
