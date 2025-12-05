@@ -52,6 +52,28 @@ def game_to_dict(game: GameState):
         "apiKey": getattr(game, 'api_key', None) 
     }
 
+# --- NEW: List Rooms Endpoint ---
+@app.route("/rooms", methods=["GET"])
+def api_list_rooms():
+    try:
+        # Dynamic import to prevent crash if storage.py isn't updated
+        from storage import get_all_games
+        games = get_all_games()
+        rooms_data = []
+        for game in games:
+            rooms_data.append({
+                "id": game.id,
+                "playerCount": len(game.players),
+                "started": game.started,
+                "winnerId": game.winner_id
+            })
+        return jsonify({"rooms": rooms_data})
+    except ImportError:
+        # Fallback if get_all_games is missing
+        return jsonify({"rooms": []})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/rooms", methods=["POST"])
 def api_create_room():
     # --- NEW: Extract API Key ---
@@ -134,16 +156,26 @@ def api_play_card(room_id):
     
     # --- Support for List or Single ID ---
     card_ids = data.get("cardIds") 
-    if not card_ids:
+    if not card_ids and card_ids is not None: 
+        # If card_ids is an empty list [], that's fine (Rose Bonus uses this)
+        pass
+    elif not card_ids:
+        # If card_ids is None or missing, try cardId or default to empty list
         single_id = data.get("cardId")
         if single_id:
             card_ids = [single_id]
+        else:
+            card_ids = []
     # -------------------------------------
 
     target_card_id = data.get("targetCardId")
 
-    if not player_id or not card_ids:
-        return jsonify({"error": "playerId and cardIds are required"}), 400
+    # FIXED: Relaxed validation. 
+    # We only check for player_id. 
+    # We allow empty card_ids because Rose Bonus moves send no cards.
+    # The Game Engine logic will validate if cards are required for the specific move.
+    if not player_id:
+        return jsonify({"error": "playerId is required"}), 400
 
     try:
         game = get_game(room_id)

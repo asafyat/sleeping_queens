@@ -18,12 +18,15 @@ import {
   Menu, 
   X,
   LogOut,
-  Trash2
+  Trash2,
+  RefreshCw,
+  Users
 } from 'lucide-react';
 
 // ==========================================
 // 0. CONFIGURATION
 // ==========================================
+// Empty string means "use the same host/port I am currently on".
 const API_URL = ''; 
 const USE_MOCK_API = false;
 
@@ -45,6 +48,9 @@ const TEXTS = {
     roomId: "מספר החדר",
     pasteRoom: "הדבק מספר חדר...",
     orJoin: "או הצטרף לחדר קיים",
+    availableRooms: "חדרים פעילים",
+    noRooms: "אין חדרים פעילים כרגע",
+    refresh: "רענן",
     room: "חדר",
     yourTurn: "🟢 תורך!",
     waiting: "🔴 מחכים...",
@@ -102,6 +108,9 @@ const TEXTS = {
     roomId: "Room ID",
     pasteRoom: "Paste Room ID...",
     orJoin: "OR Join Existing",
+    availableRooms: "Available Rooms",
+    noRooms: "No active rooms found",
+    refresh: "Refresh",
     room: "Room",
     yourTurn: "🟢 Your Turn!",
     waiting: "🔴 Waiting...",
@@ -302,18 +311,19 @@ class MockGameEngine {
           if (idx !== -1) { victimId = pid; qIdx = idx; }
         }
       });
-      if (!victimId) throw new Error("Target queen not found");
-      const victim = this.players[victimId];
-      const dragonIdx = victim.hand.findIndex(c => c.type === 'dragon');
-      if (dragonIdx !== -1) {
-        const dragon = victim.hand.splice(dragonIdx, 1)[0];
-        this.discardPile.push(dragon);
-        this.drawCard(victimId, 1);
-        msgObj = { key: 'blockSteal', params: { attacker: player.name, defender: victim.name } };
-      } else {
-        const queen = this.queensAwake[victimId].splice(qIdx, 1)[0];
-        this.queensAwake[playerId].push(queen);
-        msgObj = { key: 'stole', params: { player: player.name, queen: queen.name } };
+      if (victimId) {
+        const victim = this.players[victimId];
+        const dragonIdx = victim.hand.findIndex(c => c.type === 'dragon');
+        if (dragonIdx !== -1) {
+            const dragon = victim.hand.splice(dragonIdx, 1)[0];
+            this.discardPile.push(dragon);
+            this.drawCard(victimId, 1);
+            msgObj = { key: 'blockSteal', params: { attacker: player.name, defender: victim.name } };
+        } else {
+            const queen = this.queensAwake[victimId].splice(qIdx, 1)[0];
+            this.queensAwake[playerId].push(queen);
+            msgObj = { key: 'stole', params: { player: player.name, queen: queen.name } };
+        }
       }
     } else if (type === 'potion') {
        let victimId = null, qIdx = -1;
@@ -323,18 +333,19 @@ class MockGameEngine {
            if (idx !== -1) { victimId = pid; qIdx = idx; }
          }
        });
-       if (!victimId) throw new Error("Target queen not found");
-       const victim = this.players[victimId];
-       const wandIdx = victim.hand.findIndex(c => c.type === 'wand');
-       if (wandIdx !== -1) {
-         const wand = victim.hand.splice(wandIdx, 1)[0];
-         this.discardPile.push(wand);
-         this.drawCard(victimId, 1);
-         msgObj = { key: 'blockSleep', params: { attacker: player.name, defender: victim.name } };
-       } else {
-         const queen = this.queensAwake[victimId].splice(qIdx, 1)[0];
-         this.queensSleeping.push(queen);
-         msgObj = { key: 'slept', params: { player: player.name, queen: queen.name } };
+       if (victimId) {
+         const victim = this.players[victimId];
+         const wandIdx = victim.hand.findIndex(c => c.type === 'wand');
+         if (wandIdx !== -1) {
+           const wand = victim.hand.splice(wandIdx, 1)[0];
+           this.discardPile.push(wand);
+           this.drawCard(victimId, 1);
+           msgObj = { key: 'blockSleep', params: { attacker: player.name, defender: victim.name } };
+         } else {
+           const queen = this.queensAwake[victimId].splice(qIdx, 1)[0];
+           this.queensSleeping.push(queen);
+           msgObj = { key: 'slept', params: { player: player.name, queen: queen.name } };
+         }
        }
     } else if (type === 'jester') {
       if(this.deck.length === 0 && this.discardPile.length > 0) {
@@ -364,6 +375,9 @@ class MockGameEngine {
           }
         }
       }
+    } else {
+        // Fallback for simple discard
+        msgObj = { key: 'discard', params: { player: player.name, card: type } };
     }
     this.finishTurn(playerId, cards, msgObj, extraTurn);
     return this.getState();
@@ -503,7 +517,7 @@ body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow-x: hidde
 .theme-default.rtl { direction: rtl; }
 .theme-kid { --bg-gradient: linear-gradient(180deg, #87CEEB 0%, #E0F7FA 100%); color: #000; font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif; }
 .theme-kid.rtl { direction: rtl; }
-.lobby-card { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 90%; max-width: 450px; text-align: center; border: 3px solid #FFD700; position: relative; overflow: hidden; margin: 0 auto; margin-top: 10vh; }
+.lobby-card { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 90%; max-width: 450px; text-align: center; border: 3px solid #FFD700; position: relative; overflow: hidden; margin: 0 auto; margin-top: 5vh; max-height: 90vh; overflow-y: auto; }
 .theme-kid .lobby-card { border: 5px solid #FF69B4; border-radius: 30px; }
 .lobby-title { color: #4a148c; font-size: 2.5rem; margin: 0 0 10px 0; }
 .lobby-subtitle { color: #666; margin-bottom: 30px; font-size: 1.1rem; }
@@ -523,7 +537,16 @@ body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow-x: hidde
 .divider::before { margin-right: 10px; }
 .divider::after { margin-left: 10px; }
 
-/* === GAME LAYOUT === */
+/* ROOM LIST */
+.rooms-list { margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; }
+.rooms-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: bold; color: #555; }
+.room-item { background: #f9f9f9; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
+.room-item:hover { border-color: #4a148c; background: #f3e5f5; }
+.room-id { font-family: monospace; font-weight: bold; color: #333; }
+.room-status { font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; background: #ddd; }
+.room-status.active { background: #c8e6c9; color: #2e7d32; }
+
+/* GAME STYLES */
 .game-layout { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 .top-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.9); padding: 10px 15px; border-bottom: 2px solid rgba(0,0,0,0.1); z-index: 20; }
 .game-scroll-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
@@ -531,7 +554,9 @@ body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow-x: hidde
 
 /* COMPONENTS */
 .opponents { display: flex; justify-content: center; gap: 15px; background: rgba(255,255,255,0.8); padding: 15px; border-radius: 12px; flex-wrap: wrap; width: 100%; max-width: 800px; }
-.opponent-card { border: 1px solid #ddd; padding: 10px 15px; background: white; min-width: 120px; border-radius: 8px; position: relative; }
+.opponent-card { border: 2px solid transparent; padding: 10px 15px; background: white; min-width: 120px; border-radius: 8px; position: relative; transition: all 0.3s ease; }
+.opponent-card.current-turn { border-color: #10B981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); background: #ecfdf5; transform: scale(1.02); }
+
 .table-center { display: flex; justify-content: space-around; align-items: flex-start; padding: 25px; background-color: rgba(255,255,255,0.6); border-radius: 15px; flex-wrap: wrap; gap: 30px; width: 100%; max-width: 1000px; }
 .sleeping-queens { flex: 2; min-width: 300px; }
 .discard-pile { flex: 1; min-width: 120px; display: flex; flex-direction: column; align-items: center; }
@@ -547,7 +572,7 @@ body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow-x: hidde
   position: relative;
 }
 .my-area { padding: 15px; padding-bottom: max(15px, env(safe-area-inset-bottom)); }
-.my-area.minimized { transform: translateY(calc(100% - 50px)); } /* Show only handle/header */
+.my-area.minimized { transform: translateY(calc(100% - 50px)); } 
 
 .active-turn .my-area-container { border-top-color: #2196F3; }
 .theme-kid .my-area-container { border-top: 10px solid #76ff03; border-radius: 20px 20px 0 0; }
@@ -580,37 +605,9 @@ body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow-x: hidde
 @media (max-width: 768px) {
   .playing-card { width: 55px; height: 80px; }
   .card-back { width: 50px; height: 75px; font-size: 20px; }
-  .card-emoji { font-size: 24px; }
-  .card-label { font-size: 9px; }
-  .card-bottom-value { font-size: 12px; }
-  .opponent-card { min-width: 80px; padding: 5px; }
-  .empty-slot { width: 55px; height: 80px; }
-  
-  /* Toggle handle styling */
-  .mobile-toggle-handle {
-    position: absolute;
-    top: -24px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: white;
-    border: 1px solid #ccc;
-    border-bottom: none;
-    border-radius: 12px 12px 0 0;
-    padding: 2px 25px;
-    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    z-index: 31;
-  }
+  .mobile-toggle-handle { position: absolute; top: -24px; left: 50%; transform: translateX(-50%); background: white; border: 1px solid #ccc; border-bottom: none; border-radius: 12px 12px 0 0; padding: 2px 25px; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; color: #666; z-index: 31; }
 }
-
-/* Hide toggle on desktop */
-@media (min-width: 769px) {
-  .mobile-toggle-handle { display: none; }
-}
+@media (min-width: 769px) { .mobile-toggle-handle { display: none; } }
 `;
 
 // ==========================================
@@ -632,6 +629,9 @@ export default function App() {
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [isHandOpen, setIsHandOpen] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // New State for Rooms List
+  const [roomsList, setRoomsList] = useState([]);
 
   // AI State
   const [aiModalOpen, setAiModalOpen] = useState(false);
@@ -693,9 +693,20 @@ export default function App() {
     }
   };
 
+  const fetchRooms = async () => {
+    if (USE_MOCK_API) return;
+    try {
+        const res = await fetch(`${API_URL}/rooms`);
+        if (res.ok) {
+            const data = await res.json();
+            setRoomsList(data.rooms || []);
+        }
+    } catch (e) { console.error("Failed to fetch rooms", e); }
+  };
+
   useEffect(() => {
-    if (!apiKey) setShowKeyModal(true);
-  }, []);
+    if (view === 'lobby') fetchRooms();
+  }, [view]);
 
   // --- RECONNECTION LOGIC ---
   useEffect(() => {
@@ -1045,59 +1056,56 @@ export default function App() {
   const targetSleeping = isMyTurn && (selectedType === 'king' || gameState?.pendingRoseWake);
   const targetAwake = isMyTurn && (selectedType === 'knight' || selectedType === 'potion');
 
+  // Helper to get turn player name
+  const turnPlayerName = gameState?.players?.find(p => p.id === gameState.turnPlayerId)?.name;
+
+  if (view === 'lobby') {
+    return (
+        <div className={`app-container ${isKidMode ? 'theme-kid' : 'theme-default'} ${language === 'he' ? 'rtl' : ''}`}>
+            <style>{styles}</style>
+            <div className="lobby-card">
+                <h1 className="lobby-title">{isKidMode ? t.kidTitle : t.appTitle}</h1>
+                <div className="input-group"><input className="styled-input" placeholder={isKidMode ? t.kidName : t.enterName} value={playerName} onChange={e => setPlayerName(e.target.value)} /></div>
+                <button className="action-btn btn-create" onClick={createGame}>{isKidMode ? t.kidCreate : t.createGame}</button>
+                <div className="divider">{t.orJoin}</div>
+                <div className="input-group"><input className="styled-input" placeholder={t.pasteRoom} value={roomId} onChange={e => setRoomId(e.target.value)} /></div>
+                <button className="action-btn btn-join" onClick={() => joinGame()}>{isKidMode ? t.kidJoin : t.joinGame}</button>
+                
+                {/* --- NEW: ROOM LIST --- */}
+                <div className="rooms-list">
+                    <div className="rooms-header">
+                        <span>{t.availableRooms}</span>
+                        <button onClick={fetchRooms} className="text-sm p-1 bg-gray-200 rounded"><RefreshCw size={14}/></button>
+                    </div>
+                    {roomsList.length === 0 ? (
+                        <div className="text-gray-400 text-sm text-center italic">{t.noRooms}</div>
+                    ) : (
+                        roomsList.map(room => (
+                            <div key={room.id} className="room-item" onClick={() => setRoomId(room.id)}>
+                                <div>
+                                    <span className="room-id">#{room.id}</span>
+                                    <div className="text-xs text-gray-500 flex items-center gap-1"><Users size={10}/> {room.playerCount} Players</div>
+                                </div>
+                                <span className={`room-status ${room.started ? 'active' : ''}`}>{room.started ? 'Playing' : 'Waiting'}</span>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+  }
+  
+  // --- GUARD AGAINST NULL GAMESTATE CRASH ---
+  if (!gameState) return <div className="app-container flex justify-center items-center"><Loader2 className="animate-spin"/> {t.loading}</div>;
+
   return (
     <div className={`app-container ${isKidMode ? 'theme-kid' : 'theme-default'} ${language === 'he' ? 'rtl' : ''}`}>
       <style>{styles}</style>
-      <button className="toggle-kid-mode" onClick={() => setIsKidMode(!isKidMode)}>{isKidMode ? t.normalMode : t.kidMode}</button>
-      <button className="toggle-lang" onClick={toggleLanguage}>{t.toggleLang}</button>
-      <button className="toggle-lang" style={{top: 50}} onClick={() => setShowKeyModal(true)}><Key size={14}/></button>
-
-      {showKeyModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-             <button className="close-btn" onClick={() => setShowKeyModal(false)}>×</button>
-             <h2>{t.enterKey}</h2>
-             <input type="text" className="styled-input" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="AIza..." style={{marginBottom: 10}} />
-             <button className="action-btn btn-create" onClick={() => saveApiKey(apiKey)}><Save size={16}/> {t.saveKey}</button>
-          </div>
-        </div>
-      )}
-
-      {view === 'lobby' ? (
-        <div className="lobby-card">
-          <h1 className="lobby-title">{isKidMode ? t.kidTitle : t.appTitle}</h1>
-          <p className="lobby-subtitle">{isKidMode ? t.kidSubtitle : t.lobbySubtitle}</p>
-          <div className="input-group"><input className="styled-input" placeholder={isKidMode ? t.kidName : t.enterName} value={playerName} onChange={e => setPlayerName(e.target.value)} /></div>
-          
-          <div className="input-group">
-             <input 
-               type="text" 
-               className="styled-input" 
-               value={apiKey} 
-               onChange={e => { setApiKey(e.target.value); localStorage.setItem('gemini_api_key', e.target.value); }} 
-               placeholder={t.enterKey} 
-               style={{borderColor: '#FFD700'}}
-             />
-          </div>
-
-          <button className="action-btn btn-create" onClick={createGame}>{isKidMode ? t.kidCreate : t.createGame}</button>
-          <div className="divider">{t.orJoin}</div>
-          <div className="input-group"><input className="styled-input" placeholder={t.pasteRoom} value={roomId} onChange={e => setRoomId(e.target.value)} /></div>
-          <button className="action-btn btn-join" onClick={() => joinGame()}>{isKidMode ? t.kidJoin : t.joinGame}</button>
-          {error && <p style={{color:'red'}}>{error}</p>}
-        </div>
-      ) : (gameState && gameState.winnerId) ? (
-        <div className="lobby-card">
-            <h1 style={{color: 'gold', fontSize: '3rem', margin: 0}}>🏆</h1>
-            <h2 className="lobby-title">{t.gameOver}</h2>
-            <h3>{t.winner}: {gameState.players.find(p => p.id === gameState.winnerId)?.name}</h3>
-            <button className="action-btn btn-create" onClick={() => window.location.reload()}>{t.playAgain}</button>
-        </div>
-      ) : gameState ? (
-        <div className="game-layout">
+      <div className="game-layout">
           <div className="top-bar">
              <div>{t.room}: <strong>{gameState.id}</strong></div>
-             <div>{gameState.started ? (isMyTurn ? t.yourTurn : t.waiting) : t.notStarted}</div>
+             <div>{gameState.started ? (isMyTurn ? t.yourTurn : <span>{t.waiting} <span className="opacity-75">({turnPlayerName})</span></span>) : t.notStarted}</div>
              <div className="flex items-center gap-2">
                 {!gameState.started && <button className="start-btn" onClick={startGame}>{t.startGame}</button>}
                 
@@ -1126,22 +1134,29 @@ export default function App() {
               </div>
             )}
             <div className="opponents">
-              {gameState.players.filter(p => p.id !== playerId).map(p => (
-                <div key={p.id} className="opponent-card">
-                  <h4>{p.name}</h4>
-                  <button className="btn-spy" onClick={() => spyOnOpponent(p)}><Eye size={12}/></button>
-                  <div style={{fontSize: '0.9rem', color: '#666'}}>{t.cards}: <strong>{p.handCount !== undefined ? p.handCount : p.hand.length}</strong> | {t.score}: <strong>{p.score}</strong></div>
-                  <div className="card-row" style={{transform: 'scale(0.85)', marginTop: '5px'}}> 
-                    {p.queensAwake.map(q => {
-                      const visual = getCardVisual(q, language);
-                      return <div key={q.id} className={`playing-card queen ${targetAwake ? 'clickable-target' : ''}`} onClick={() => handleOpponentQueenClick(q)} style={{backgroundColor: visual.color}}>
-                          <div className="card-label">{visual.label}</div><div className="card-emoji">{visual.emoji}</div><div className="card-bottom-value">{q.value}</div>
-                      </div>;
-                    })}
-                    {p.queensAwake.length === 0 && <span style={{fontSize: '12px', color: '#999'}}>{t.noQueens}</span>}
+              {gameState.players.filter(p => p.id !== playerId).map(p => {
+                const isOpponentTurn = p.id === gameState.turnPlayerId;
+                return (
+                  <div key={p.id} className={`opponent-card ${isOpponentTurn ? 'current-turn' : ''}`}>
+                    {/* Name is here */}
+                    <h4 className="flex items-center justify-center gap-2 font-bold">
+                      {p.name}
+                      {isOpponentTurn && <Loader2 size={14} className="animate-spin text-green-600"/>}
+                    </h4>
+                    <button className="btn-spy" onClick={() => spyOnOpponent(p)}><Eye size={12}/></button>
+                    <div style={{fontSize: '0.9rem', color: '#666'}}>{t.cards}: <strong>{p.handCount !== undefined ? p.handCount : p.hand.length}</strong> | {t.score}: <strong>{p.score}</strong></div>
+                    <div className="card-row" style={{transform: 'scale(0.85)', marginTop: '5px'}}> 
+                      {p.queensAwake.map(q => {
+                        const visual = getCardVisual(q, language);
+                        return <div key={q.id} className={`playing-card queen ${targetAwake ? 'clickable-target' : ''}`} onClick={() => handleOpponentQueenClick(q)} style={{backgroundColor: visual.color}}>
+                            <div className="card-label">{visual.label}</div><div className="card-emoji">{visual.emoji}</div><div className="card-bottom-value">{q.value}</div>
+                        </div>;
+                      })}
+                      {p.queensAwake.length === 0 && <span style={{fontSize: '12px', color: '#999'}}>{t.noQueens}</span>}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             
             <div className="table-center">
@@ -1176,7 +1191,8 @@ export default function App() {
                {/* MINIMIZED VIEW LOGIC */}
                <div className={!isHandOpen ? 'minimized-content' : ''} style={{display: !isHandOpen ? 'none' : 'block'}}>
                  <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                     <h3>{myPlayer?.name} - {t.score}: {myPlayer?.score}</h3>
+                     {/* Name is here */}
+                     <h3 className="font-bold text-lg">{myPlayer?.name} <span className="text-sm font-normal">- {t.score}: {myPlayer?.score}</span></h3>
                      {gameState.started && <button className="btn-advisor" onClick={askAdvisor} disabled={!isMyTurn}><ScrollText size={16} /> {isKidMode ? t.kidAdvisor : t.advisorBtn}</button>}
                  </div>
                  <div>
@@ -1212,10 +1228,15 @@ export default function App() {
                  </div>
                </div>
                
-               {/* HEADER ONLY WHEN MINIMIZED */}
+               {/* HEADER ONLY WHEN MINIMIZED - ADDED NAME HERE */}
                {!isHandOpen && (
-                  <div style={{textAlign: 'center', padding: '10px', color: '#666', fontSize: '0.9rem'}} onClick={() => setIsHandOpen(true)}>
-                    Tap to show hand ({myPlayer?.hand.length} cards)
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 5px', color: '#333'}} onClick={() => setIsHandOpen(true)}>
+                    <div className="font-bold flex items-center gap-2">
+                        {myPlayer?.name}
+                        {isMyTurn && <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"/>}
+                    </div>
+                    <div style={{fontSize: '0.85rem', color: '#666'}}>Show Hand ({myPlayer?.hand.length})</div>
+                    <div className="font-bold">{t.score}: {myPlayer?.score}</div>
                   </div>
                )}
              </div>
