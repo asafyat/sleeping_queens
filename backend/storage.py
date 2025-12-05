@@ -1,26 +1,30 @@
-from typing import Dict, List, Optional
-from game_engine import GameState, create_new_game
+import uuid
+# We must import create_new_game to ensure the deck is built correctly
+from game_engine import create_new_game, GameState
 
-_games: Dict[str, GameState] = {}
+# In-memory storage for games
+games = {}
 
-
-def create_game(api_key: Optional[str] = None) -> GameState:
-    """
-    Creates a new game, optionally storing an API key for AI features.
-    """
-    # Pass the api_key to the game engine's creation function
-    # Note: You must also update create_new_game() in game_engine.py to accept this argument!
+def create_game(api_key=None):
+    """Creates a new game using the engine's factory function."""
+    # This uses the logic in game_engine.py to build the deck and setup the state
     game = create_new_game(api_key=api_key)
-    _games[game.id] = game
+    
+    # Optional: If you prefer short 6-char Room IDs like before, uncomment this line:
+    # game.id = str(uuid.uuid4())[:6].upper()
+    
+    games[game.id] = game
     return game
 
+def get_game(room_id):
+    """Retrieves a game by ID."""
+    if room_id not in games:
+        raise KeyError(f"Game with ID {room_id} not found")
+    return games[room_id]
 
-def get_game(game_id: str) -> GameState:
-    game = _games.get(game_id)
-    if not game:
-        raise KeyError(f"Game {game_id} not found")
-    return game
-
-
-def list_games() -> List[GameState]:
-    return list(_games.values())
+def delete_game(room_id):
+    """Removes a game from storage."""
+    if room_id in games:
+        del games[room_id]
+    else:
+        raise KeyError(f"Game with ID {room_id} not found")

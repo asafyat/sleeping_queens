@@ -12,15 +12,18 @@ import {
   Music,    
   Eye,
   Key,
-  Save
+  Save,
+  ChevronUp,
+  ChevronDown,
+  Menu, 
+  X,
+  LogOut,
+  Trash2
 } from 'lucide-react';
 
 // ==========================================
 // 0. CONFIGURATION
 // ==========================================
-// Empty string means "use the same host/port I am currently on".
-// This lets Nginx proxy the requests to /rooms correctly.
-// If running locally without Nginx, use 'http://127.0.0.1:5000'
 const API_URL = ''; 
 const USE_MOCK_API = false;
 
@@ -67,6 +70,7 @@ const TEXTS = {
     winner: "המנצח הוא",
     playAgain: "שחק שוב",
     loading: "טוען...",
+    reconnecting: "מתחבר מחדש למשחק...",
     toggleLang: "Switch to English 🇺🇸",
     kidMode: "מצב ילדים 🎈",
     normalMode: "מצב רגיל 👔",
@@ -74,6 +78,8 @@ const TEXTS = {
     enterKey: "מפתח API (עבור ה-AI)",
     saveKey: "שמור מפתח",
     apiKeyMissing: "חסר מפתח API. נא להזין אותו בהגדרות.",
+    logout: "התנתק",
+    terminate: "סיים משחק (לכולם)",
     cardLabels: {
       king: "מלך", knight: "אביר", potion: "שיקוי", dragon: "דרקון", wand: "שרביט", jester: "ליצן", number: "מספר"
     },
@@ -121,6 +127,7 @@ const TEXTS = {
     winner: "Winner is",
     playAgain: "Play Again",
     loading: "Loading...",
+    reconnecting: "Reconnecting to game...",
     toggleLang: "עבור לעברית 🇮🇱",
     kidMode: "Kid Mode 🎈",
     normalMode: "Normal Mode 👔",
@@ -128,6 +135,8 @@ const TEXTS = {
     enterKey: "Gemini API Key (for AI)",
     saveKey: "Save Key",
     apiKeyMissing: "API Key missing. Please enter it in settings.",
+    logout: "Logout",
+    terminate: "Terminate Game",
     cardLabels: {
       king: "King", knight: "Knight", potion: "Potion", dragon: "Dragon", wand: "Wand", jester: "Jester", number: "Number"
     },
@@ -487,13 +496,14 @@ const getCardVisual = (card, lang) => {
 const styles = `
 * { box-sizing: border-box; }
 body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow-x: hidden; }
-#root { width: 100%; min-height: 100vh; margin: 0; padding: 0; text-align: center; }
+#root { width: 100%; height: 100%; margin: 0; padding: 0; text-align: center; }
+.app-container { height: 100dvh; display: flex; flex-direction: column; background: var(--bg-gradient); overflow: hidden; }
 .app-background { min-height: 100vh; width: 100%; display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
-.theme-default { background: linear-gradient(135deg, #2c3e50 0%, #4a148c 100%); direction: ltr; }
+.theme-default { --bg-gradient: linear-gradient(135deg, #2c3e50 0%, #4a148c 100%); direction: ltr; }
 .theme-default.rtl { direction: rtl; }
-.theme-kid { background: linear-gradient(180deg, #87CEEB 0%, #E0F7FA 100%); color: #000; font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif; }
+.theme-kid { --bg-gradient: linear-gradient(180deg, #87CEEB 0%, #E0F7FA 100%); color: #000; font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif; }
 .theme-kid.rtl { direction: rtl; }
-.lobby-card { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 90%; max-width: 450px; text-align: center; border: 3px solid #FFD700; position: relative; overflow: hidden; margin: 0 auto; }
+.lobby-card { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 90%; max-width: 450px; text-align: center; border: 3px solid #FFD700; position: relative; overflow: hidden; margin: 0 auto; margin-top: 10vh; }
 .theme-kid .lobby-card { border: 5px solid #FF69B4; border-radius: 30px; }
 .lobby-title { color: #4a148c; font-size: 2.5rem; margin: 0 0 10px 0; }
 .lobby-subtitle { color: #666; margin-bottom: 30px; font-size: 1.1rem; }
@@ -512,26 +522,47 @@ body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow-x: hidde
 .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #ddd; }
 .divider::before { margin-right: 10px; }
 .divider::after { margin-left: 10px; }
-.game-board { background: rgba(255, 255, 255, 0.95); border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); padding: 20px; width: 100%; max-width: 1200px; text-align: center; border: 2px solid #FFD700; margin: 20px auto; }
-.top-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+
+/* === GAME LAYOUT === */
+.game-layout { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.top-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.9); padding: 10px 15px; border-bottom: 2px solid rgba(0,0,0,0.1); z-index: 20; }
+.game-scroll-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
 .start-btn { background-color: #4CAF50; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
-.opponents { display: flex; justify-content: center; gap: 15px; background: #f5f5f5; padding: 15px; border-radius: 12px; flex-wrap: wrap; margin-bottom: 25px; }
+
+/* COMPONENTS */
+.opponents { display: flex; justify-content: center; gap: 15px; background: rgba(255,255,255,0.8); padding: 15px; border-radius: 12px; flex-wrap: wrap; width: 100%; max-width: 800px; }
 .opponent-card { border: 1px solid #ddd; padding: 10px 15px; background: white; min-width: 120px; border-radius: 8px; position: relative; }
-.table-center { display: flex; justify-content: space-around; align-items: flex-start; padding: 25px; background-color: #e8f5e9; border-radius: 15px; min-height: 180px; flex-wrap: wrap; gap: 30px; margin-bottom: 25px; }
-.my-area { border: 2px solid #e0e0e0; padding: 25px; border-radius: 15px; background: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-.active-turn { border-color: #2196F3; box-shadow: 0 0 20px rgba(33, 150, 243, 0.3); background-color: #fafdff; }
-.theme-kid .my-area { border-top: 10px solid #76ff03; border-radius: 30px 30px 0 0; }
-.card-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 15px; }
-.playing-card { width: 85px; height: 120px; border: 1px solid #bbb; border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; background: white; cursor: pointer; transition: all 0.2s; padding: 5px; box-shadow: 2px 4px 8px rgba(0,0,0,0.15); position: relative; user-select: none; }
+.table-center { display: flex; justify-content: space-around; align-items: flex-start; padding: 25px; background-color: rgba(255,255,255,0.6); border-radius: 15px; flex-wrap: wrap; gap: 30px; width: 100%; max-width: 1000px; }
+.sleeping-queens { flex: 2; min-width: 300px; }
+.discard-pile { flex: 1; min-width: 120px; display: flex; flex-direction: column; align-items: center; }
+
+/* MY AREA - STICKY FOOTER */
+.my-area-container { 
+  background: white; 
+  border-top: 4px solid #ddd; 
+  box-shadow: 0 -5px 25px rgba(0,0,0,0.2); 
+  z-index: 30; 
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  flex-shrink: 0; /* Prevent shrinking */
+  position: relative;
+}
+.my-area { padding: 15px; padding-bottom: max(15px, env(safe-area-inset-bottom)); }
+.my-area.minimized { transform: translateY(calc(100% - 50px)); } /* Show only handle/header */
+
+.active-turn .my-area-container { border-top-color: #2196F3; }
+.theme-kid .my-area-container { border-top: 10px solid #76ff03; border-radius: 20px 20px 0 0; }
+
+.card-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.playing-card { width: 80px; height: 115px; border: 1px solid #bbb; border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; background: white; cursor: pointer; transition: all 0.2s; padding: 5px; box-shadow: 2px 4px 8px rgba(0,0,0,0.15); position: relative; user-select: none; }
 .playing-card:hover:not(:disabled) { transform: translateY(-8px); z-index: 10; }
-.card-label { font-size: 11px; font-weight: bold; text-transform: uppercase; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; margin-top: 2px; }
-.card-emoji { font-size: 42px; line-height: 1; }
-.card-bottom-value { font-size: 18px; font-weight: bold; align-self: flex-end; margin-right: 4px; margin-bottom: 2px; }
-.card-back { width: 65px; height: 90px; background: linear-gradient(135deg, #673AB7, #512DA8); color: white; display: flex; justify-content: center; align-items: center; border-radius: 8px; border: 2px solid white; cursor: pointer; font-size: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); } 
+.card-label { font-size: 10px; font-weight: bold; text-transform: uppercase; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+.card-emoji { font-size: 38px; line-height: 1; }
+.card-bottom-value { font-size: 16px; font-weight: bold; align-self: flex-end; margin-right: 4px; }
+.card-back { width: 60px; height: 85px; background: linear-gradient(135deg, #673AB7, #512DA8); color: white; display: flex; justify-content: center; align-items: center; border-radius: 8px; border: 2px solid white; cursor: pointer; font-size: 28px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); } 
 .queen { border-color: #B8860B; background-color: #fffde7; }
 .selected-card { border: 3px solid #2196F3; background-color: #e3f2fd; transform: translateY(-12px) !important; }
 .clickable-target { cursor: pointer; box-shadow: 0 0 15px #FFD700; animation: pulse 1.5s infinite; border-color: #FFD700; }
-.message-bar { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; padding: 10px; background: #e3f2fd; border-radius: 8px; }
+.message-bar { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; padding: 10px; background: #e3f2fd; border-radius: 8px; width: 90%; max-width: 600px; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(2px); }
 .modal-content { background: white; padding: 25px; border-radius: 16px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.4); border: 2px solid #764ba2; position: relative; }
 .advisor-text { font-style: italic; color: #4a148c; line-height: 1.6; margin: 15px 0; background: #f3e5f5; padding: 15px; border-radius: 8px; }
@@ -543,7 +574,43 @@ body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow-x: hidde
 .toggle-lang { position: absolute; top: 10px; right: 10px; background: white; border: 2px solid #333; border-radius: 20px; padding: 5px 10px; cursor: pointer; font-size: 0.9rem; z-index: 100; }
 .rtl .toggle-lang { right: auto; left: 10px; }
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-.empty-slot { width: 85px; height: 120px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 10px; background: rgba(0,0,0,0.02); }
+.empty-slot { width: 80px; height: 115px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 10px; background: rgba(0,0,0,0.02); }
+
+/* MOBILE RESPONSIVE TWEAKS */
+@media (max-width: 768px) {
+  .playing-card { width: 55px; height: 80px; }
+  .card-back { width: 50px; height: 75px; font-size: 20px; }
+  .card-emoji { font-size: 24px; }
+  .card-label { font-size: 9px; }
+  .card-bottom-value { font-size: 12px; }
+  .opponent-card { min-width: 80px; padding: 5px; }
+  .empty-slot { width: 55px; height: 80px; }
+  
+  /* Toggle handle styling */
+  .mobile-toggle-handle {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    padding: 2px 25px;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    z-index: 31;
+  }
+}
+
+/* Hide toggle on desktop */
+@media (min-width: 769px) {
+  .mobile-toggle-handle { display: none; }
+}
 `;
 
 // ==========================================
@@ -551,9 +618,11 @@ body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow-x: hidde
 // ==========================================
 export default function App() {
   const [view, setView] = useState('lobby');
-  const [playerName, setPlayerName] = useState('');
-  const [playerId, setPlayerId] = useState(null);
-  const [roomId, setRoomId] = useState('');
+  // LOAD FROM STORAGE
+  const [playerName, setPlayerName] = useState(localStorage.getItem('sq_player_name') || '');
+  const [playerId, setPlayerId] = useState(localStorage.getItem('sq_player_id') || null);
+  const [roomId, setRoomId] = useState(localStorage.getItem('sq_room_id') || '');
+  
   const [gameState, setGameState] = useState(null);
   const [selectedCardIds, setSelectedCardIds] = useState([]);
   const [isKidMode, setIsKidMode] = useState(false);
@@ -561,6 +630,8 @@ export default function App() {
   const [error, setError] = useState('');
   const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
   const [showKeyModal, setShowKeyModal] = useState(false);
+  const [isHandOpen, setIsHandOpen] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // AI State
   const [aiModalOpen, setAiModalOpen] = useState(false);
@@ -577,11 +648,95 @@ export default function App() {
     setShowKeyModal(false);
   };
 
+  const saveSession = (rId, pId, pName) => {
+    localStorage.setItem('sq_room_id', rId);
+    localStorage.setItem('sq_player_id', pId);
+    localStorage.setItem('sq_player_name', pName);
+  };
+
+  const clearSession = () => {
+    localStorage.removeItem('sq_room_id');
+    localStorage.removeItem('sq_player_id');
+    // We keep player name for convenience
+    setRoomId('');
+    setPlayerId(null);
+  };
+
+  const handleLogout = () => {
+    if (confirm(t.logout + "?")) {
+      clearSession();
+      setGameState(null);
+      setView('lobby');
+    }
+  };
+
+  const handleTerminate = async () => {
+    if (confirm(t.terminate + "?")) {
+      if (!USE_MOCK_API && roomId) {
+        try {
+          const res = await fetch(`${API_URL}/rooms/${roomId}`, { method: 'DELETE' });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            alert("Failed to terminate game on server: " + (data.error || res.statusText));
+            return; // Don't clear session if server fail
+          }
+        } catch(e) { 
+          console.error(e);
+          alert("Network error: Could not reach server to terminate game.");
+          return;
+        }
+      }
+      // Only clear if mock or success
+      clearSession();
+      setGameState(null);
+      setView('lobby');
+    }
+  };
+
   useEffect(() => {
     if (!apiKey) setShowKeyModal(true);
   }, []);
 
-  // --- API CALLS (Hybrid Mock/Real) ---
+  // --- RECONNECTION LOGIC ---
+  useEffect(() => {
+    const checkActiveSession = async () => {
+      // Only check if we are in lobby and have saved data
+      if (view === 'lobby' && roomId && playerId) {
+        if (USE_MOCK_API) {
+           // Mock server resets on reload, so reconnection usually fails unless we mock that too.
+           // For now, we skip auto-reconnect on mock to avoid confusion.
+        } else {
+           try {
+             // 1. Fetch Room State
+             // Add playerId param so server returns hands
+             const res = await fetch(`${API_URL}/rooms/${roomId}?playerId=${playerId}`);
+             if (res.ok) {
+               const data = await res.json();
+               // 2. Check if player exists in that room
+               if (data.players && data.players.find(p => p.id === playerId)) {
+                 setGameState(data);
+                 setView('game');
+                 // Optional: Refresh token logic if needed
+               } else {
+                 // Player not in room? Clear session
+                 clearSession();
+               }
+             } else if (res.status === 404) {
+               // Room deleted/expired
+               clearSession();
+             }
+           } catch (e) {
+             console.error("Auto-reconnect failed:", e);
+             // On network error, we might want to let them try manually or retry.
+             // For now, doing nothing lets them stay in lobby with filled fields.
+           }
+        }
+      }
+    };
+    checkActiveSession();
+  }, []); // Run once on mount
+
+  // --- API CALLS ---
 
   const fetchGameState = async () => {
     if (USE_MOCK_API) {
@@ -594,11 +749,13 @@ export default function App() {
     }
     if (!roomId) return;
     try {
-      const res = await fetch(`${API_URL}/rooms/${roomId}`);
+      // Add playerId param so server returns hands
+      const res = await fetch(`${API_URL}/rooms/${roomId}?playerId=${playerId}`);
       if (res.status === 404) {
-        alert("Game not found (Server might have restarted). Returning to lobby.");
+        // Game over or server restart
+        alert("Game session lost. Returning to lobby.");
+        clearSession();
         setView('lobby');
-        setRoomId('');
         setGameState(null);
         return;
       }
@@ -615,7 +772,7 @@ export default function App() {
 
   const createGame = async () => {
     if (USE_MOCK_API) {
-      mockServer.reset(apiKey); // Pass API Key to Mock Server
+      mockServer.reset(apiKey);
       const p = mockServer.addPlayer(playerName || (language==='he' ? "שחקן" : "Player"));
       mockServer.addPlayer(language==='he' ? "מחשב" : "CPU"); 
       setRoomId(mockServer.id);
@@ -627,10 +784,12 @@ export default function App() {
         const res = await fetch(`${API_URL}/rooms`, { 
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ apiKey }) // Send API Key to Backend
+            body: JSON.stringify({ apiKey }) 
         });
         const data = await res.json();
         setRoomId(data.roomId);
+        // We need player ID from joining, so we call joinGame next
+        // But wait, standard flow is: Create -> Get Room ID -> Join as player 1
         await joinGame(data.roomId); 
       } catch (err) {
         setError('Failed to create game: ' + err.message);
@@ -657,15 +816,20 @@ export default function App() {
         });
         
         if (res.status === 404) {
-             alert("Room not found! The server might have restarted or you hit a different worker process.");
-             setRoomId(''); // Clear invalid ID
+             alert("Room not found! The server might have restarted.");
+             setRoomId(''); 
              return;
         }
 
         if (!res.ok) throw new Error('Room not found or full');
         const data = await res.json();
+        
         setPlayerId(data.playerId);
         setRoomId(roomToJoin);
+        
+        // SAVE SESSION
+        saveSession(roomToJoin, data.playerId, playerName);
+
         setView('game');
         fetchGameState();
       } catch (err) {
@@ -674,6 +838,7 @@ export default function App() {
     }
   };
 
+  // ... rest of the component (startGame, playMove, AI handlers, render) ...
   const startGame = async () => {
     if (USE_MOCK_API) {
       try { setGameState(mockServer.startGame()); } catch(e) { setError(e.message); }
@@ -722,7 +887,6 @@ export default function App() {
     }
   };
 
-  // --- POLLING ---
   useEffect(() => {
     if (view === 'game' && !USE_MOCK_API) {
       fetchGameState();
@@ -743,20 +907,19 @@ export default function App() {
     const queensSleeping = gameState.queensSleeping.length;
     const opponentStatus = gameState.players.filter(p=>p.id!==playerId).map(p=>`${p.name} has ${p.queensAwake.length} queens`).join(', ');
     
-    // --- UPDATED & FIXED STRATEGY PROMPT ---
     const strategyTips = language === 'he' 
       ? `סדר עדיפויות אסטרטגי:
          1. אם יש מלך (King) או ליצן (Jester) - שחק אותם מיד.
          2. אם יש אביר (Knight) או שיקוי (Potion) - שחק רק אם יש ליריב מלכות לתקוף.
          3. שרביט (Wand) ודרקון (Dragon) - **אל תשחק!** שמור אותם להגנה.
-         4. אם יש משוואה מתמטית (3 קלפים ומעלה) - זרוק אותם כדי לרענן את היד.
+         4. אם יש משוואה מתמטית (3 קלפים ומעלה) - זרוק אותם כדי לרענן את היד. חפש חיבור! (למשל 2+6=8).
          5. אם יש זוג מספרים זהים - זרוק אותם.
          6. רק אם אין ברירה - זרוק מספר בודד (עדיף גבוה).`
       : `Strategy Priority:
          1. Play King or Jester immediately.
          2. Play Knight or Potion ONLY if opponent has queens.
          3. Wand & Dragon are DEFENSE - **Hold them!** Do not play them.
-         4. Discard Math Equation (3+ cards) to cycle hand.
+         4. CHECK FOR MATH: If you have numbers that add up (e.g. 2, 6, 8 because 2+6=8), advise to discard ALL of them as an equation.
          5. Discard Pair (2 cards) to cycle hand.
          6. Discard Single Number (Last resort).`;
 
@@ -765,8 +928,8 @@ export default function App() {
         prompt = `
           אתה היועץ המלכותי החכם במשחק מלכות ישנות.
           היד שלי: [${myHand}]
-          מלכות ישנות שנותרו: ${queensSleeping}
-          יריבים: ${opponentStatus}
+          
+          חשוב מאוד: בדוק אם יש קלפי מספרים שיוצרים משוואת חיבור (למשל 2, 3, 5 כי 2+3=5). אם כן, המלץ לזרוק את כולם!
           
           ${strategyTips}
           
@@ -776,8 +939,8 @@ export default function App() {
         prompt = `
           You are the Wise Royal Advisor in Sleeping Queens.
           My Hand: [${myHand}]
-          Sleeping Queens left: ${queensSleeping}
-          Opponents: ${opponentStatus}
+          
+          CRITICAL: Check if any number cards form an addition equation (e.g. 2+6=8). If they do, recommend discarding the whole equation!
           
           ${strategyTips}
           
@@ -808,7 +971,6 @@ export default function App() {
     setAiModalOpen(true);
     setAiLoading(true);
     const msg = translateMessage(gameState.lastMessage, language);
-    // --- UPDATED BARD PROMPT FOR KIDS ---
     const prompt = language === 'he'
         ? `כתוב שיר ילדים קצרצר (2-4 שורות), מצחיק, מתוק ועדין מאוד בעברית על מה שקרה במשחק: "${msg}".
            השתמש בחרוזים פשוטים ושפה קלילה שמתאימה לקטנטנים. בלי מילים מורכבות.`
@@ -824,7 +986,6 @@ export default function App() {
     setAiType('spy');
     setAiModalOpen(true);
     setAiLoading(true);
-    // --- UPDATED SPY PROMPT FOR KIDS ---
     const prompt = language === 'he'
         ? `אתה שדון סקרן, חמוד וידידותי מאוד. הצצת בקלפים של החבר/ה "${opp.name}".
            יש לו/ה ${opp.score} נקודות ו-${opp.hand.length} קלפים ביד.
@@ -839,7 +1000,6 @@ export default function App() {
     setAiLoading(false);
   };
 
-  // --- INTERACTION HANDLERS ---
   const handleHandClick = (card) => {
     if (gameState?.turnPlayerId !== playerId) return;
     const player = gameState.players.find(p => p.id === playerId);
@@ -875,7 +1035,6 @@ export default function App() {
     }
   };
 
-  // --- DERIVED STATE FOR RENDER ---
   const myPlayer = gameState?.players?.find(p => p.id === playerId);
   const isMyTurn = gameState?.turnPlayerId === playerId;
   
@@ -886,7 +1045,6 @@ export default function App() {
   const targetSleeping = isMyTurn && (selectedType === 'king' || gameState?.pendingRoseWake);
   const targetAwake = isMyTurn && (selectedType === 'knight' || selectedType === 'potion');
 
-  // --- RENDER ---
   return (
     <div className={`app-container ${isKidMode ? 'theme-kid' : 'theme-default'} ${language === 'he' ? 'rtl' : ''}`}>
       <style>{styles}</style>
@@ -894,7 +1052,6 @@ export default function App() {
       <button className="toggle-lang" onClick={toggleLanguage}>{t.toggleLang}</button>
       <button className="toggle-lang" style={{top: 50}} onClick={() => setShowKeyModal(true)}><Key size={14}/></button>
 
-      {/* API Key Modal */}
       {showKeyModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -912,7 +1069,6 @@ export default function App() {
           <p className="lobby-subtitle">{isKidMode ? t.kidSubtitle : t.lobbySubtitle}</p>
           <div className="input-group"><input className="styled-input" placeholder={isKidMode ? t.kidName : t.enterName} value={playerName} onChange={e => setPlayerName(e.target.value)} /></div>
           
-          {/* API Key Input for Creator */}
           <div className="input-group">
              <input 
                type="text" 
@@ -938,91 +1094,129 @@ export default function App() {
             <button className="action-btn btn-create" onClick={() => window.location.reload()}>{t.playAgain}</button>
         </div>
       ) : gameState ? (
-        <div className="game-board">
+        <div className="game-layout">
           <div className="top-bar">
              <div>{t.room}: <strong>{gameState.id}</strong></div>
              <div>{gameState.started ? (isMyTurn ? t.yourTurn : t.waiting) : t.notStarted}</div>
-             {!gameState.started && <button className="start-btn" onClick={startGame}>{t.startGame}</button>}
+             <div className="flex items-center gap-2">
+                {!gameState.started && <button className="start-btn" onClick={startGame}>{t.startGame}</button>}
+                
+                {/* Desktop Buttons */}
+                <div className="hidden md:flex gap-2">
+                  <button onClick={handleLogout} className="p-2 bg-gray-200 rounded hover:bg-gray-300" title={t.logout}>
+                    <LogOut size={18} />
+                  </button>
+                  <button onClick={handleTerminate} className="p-2 bg-red-100 text-red-600 rounded hover:bg-red-200" title={t.terminate}>
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+
+                {/* Mobile Menu Button */}
+                <button onClick={() => setIsMenuOpen(true)} className="md:hidden p-2">
+                  <Menu size={24} />
+                </button>
+             </div>
           </div>
-          {gameState.lastMessage && (
-            <div className="message-bar">
-              <span><strong>{t.lastAction}</strong> {translateMessage(gameState.lastMessage, language)}</span>
-              <button className="btn-bard" onClick={askBard}><Music size={12} /></button>
+          
+          <div className="game-scroll-area">
+            {gameState.lastMessage && (
+              <div className="message-bar">
+                <span><strong>{t.lastAction}</strong> {translateMessage(gameState.lastMessage, language)}</span>
+                <button className="btn-bard" onClick={askBard}><Music size={12} /></button>
+              </div>
+            )}
+            <div className="opponents">
+              {gameState.players.filter(p => p.id !== playerId).map(p => (
+                <div key={p.id} className="opponent-card">
+                  <h4>{p.name}</h4>
+                  <button className="btn-spy" onClick={() => spyOnOpponent(p)}><Eye size={12}/></button>
+                  <div style={{fontSize: '0.9rem', color: '#666'}}>{t.cards}: <strong>{p.handCount !== undefined ? p.handCount : p.hand.length}</strong> | {t.score}: <strong>{p.score}</strong></div>
+                  <div className="card-row" style={{transform: 'scale(0.85)', marginTop: '5px'}}> 
+                    {p.queensAwake.map(q => {
+                      const visual = getCardVisual(q, language);
+                      return <div key={q.id} className={`playing-card queen ${targetAwake ? 'clickable-target' : ''}`} onClick={() => handleOpponentQueenClick(q)} style={{backgroundColor: visual.color}}>
+                          <div className="card-label">{visual.label}</div><div className="card-emoji">{visual.emoji}</div><div className="card-bottom-value">{q.value}</div>
+                      </div>;
+                    })}
+                    {p.queensAwake.length === 0 && <span style={{fontSize: '12px', color: '#999'}}>{t.noQueens}</span>}
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-          <div className="opponents">
-            {gameState.players.filter(p => p.id !== playerId).map(p => (
-              <div key={p.id} className="opponent-card">
-                <h4>{p.name}</h4>
-                <button className="btn-spy" onClick={() => spyOnOpponent(p)}><Eye size={12}/></button>
-                <div style={{fontSize: '0.9rem', color: '#666'}}>{t.cards}: <strong>{p.hand.length}</strong> | {t.score}: <strong>{p.score}</strong></div>
-                <div className="card-row" style={{transform: 'scale(0.85)', marginTop: '5px'}}> 
-                  {p.queensAwake.map(q => {
-                    const visual = getCardVisual(q, language);
-                    return <div key={q.id} className={`playing-card queen ${targetAwake ? 'clickable-target' : ''}`} onClick={() => handleOpponentQueenClick(q)} style={{backgroundColor: visual.color}}>
-                        <div className="card-label">{visual.label}</div><div className="card-emoji">{visual.emoji}</div><div className="card-bottom-value">{q.value}</div>
-                    </div>;
-                  })}
-                  {p.queensAwake.length === 0 && <span style={{fontSize: '12px', color: '#999'}}>{t.noQueens}</span>}
+            
+            <div className="table-center">
+              <div className="sleeping-queens">
+                <h3>{t.sleepingQueens} ({gameState.queensSleeping.length}) {targetSleeping && <span style={{color: 'red'}}>{t.selectQueen}</span>}
+                  {gameState.pendingRoseWake && isMyTurn && <div style={{color: '#E91E63', animation: 'pulse 1s infinite'}}>{t.roseBonus}</div>}
+                </h3>
+                <div className="card-row">
+                  {gameState.queensSleeping.map((c) => (
+                    <div key={c.id} className={`card-back ${targetSleeping ? 'clickable-target' : ''}`} onClick={() => handleQueenClick(c)}><span>👸</span></div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-          <div className="table-center">
-            <div className="sleeping-queens">
-              <h3>{t.sleepingQueens} ({gameState.queensSleeping.length}) {targetSleeping && <span style={{color: 'red'}}>{t.selectQueen}</span>}
-                {gameState.pendingRoseWake && isMyTurn && <div style={{color: '#E91E63', animation: 'pulse 1s infinite'}}>{t.roseBonus}</div>}
-              </h3>
-              <div className="card-row">
-                {gameState.queensSleeping.map((c) => (
-                  <div key={c.id} className={`card-back ${targetSleeping ? 'clickable-target' : ''}`} onClick={() => handleQueenClick(c)}><span>👸</span></div>
-                ))}
-              </div>
-            </div>
-            <div className="discard-pile">
-                <h3>{t.discardPile}</h3>
-                {gameState.discardPile.length > 0 ? (() => {
-                     const visual = getCardVisual(gameState.discardPile[gameState.discardPile.length - 1], language);
-                     return <div className="playing-card" style={{backgroundColor: visual.color}}>
-                        <div className="card-label">{visual.label}</div><div className="card-emoji">{visual.emoji}</div><div className="card-bottom-value">{visual.emoji === '?' ? '' : (gameState.discardPile[gameState.discardPile.length - 1].value || '')}</div>
-                     </div>
-                })() : <div className="empty-slot">{t.empty}</div>}
-            </div>
-          </div>
-          <div className={`my-area ${isMyTurn ? 'active-turn' : ''}`}>
-             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-                 <h3>{myPlayer?.name} - {t.score}: {myPlayer?.score}</h3>
-                 {gameState.started && <button className="btn-advisor" onClick={askAdvisor} disabled={!isMyTurn}><ScrollText size={16} /> {isKidMode ? t.kidAdvisor : t.advisorBtn}</button>}
-             </div>
-             <div>
-                <h4 style={{margin: '5px 0'}}>{t.myQueens}</h4>
-                <div className="card-row">
-                   {myPlayer?.queensAwake.length > 0 ? myPlayer.queensAwake.map(q => {
-                       const visual = getCardVisual(q, language);
-                       return <div key={q.id} className="playing-card queen" style={{backgroundColor: visual.color}} onClick={() => askLore(visual.label)}>
-                           <div className="card-label">{visual.label}</div><div className="card-emoji">{visual.emoji}</div><div className="card-bottom-value">{q.value}</div>
+              <div className="discard-pile">
+                  <h3>{t.discardPile}</h3>
+                  {gameState.discardPile.length > 0 ? (() => {
+                       const visual = getCardVisual(gameState.discardPile[gameState.discardPile.length - 1], language);
+                       return <div className="playing-card" style={{backgroundColor: visual.color}}>
+                          <div className="card-label">{visual.label}</div><div className="card-emoji">{visual.emoji}</div><div className="card-bottom-value">{visual.emoji === '?' ? '' : (gameState.discardPile[gameState.discardPile.length - 1].value || '')}</div>
                        </div>
-                   }) : <span style={{color: '#999'}}>{t.noQueensYet}</span>}
-                </div>
-             </div>
-             <div>
-                <h4 style={{margin: '10px 0 5px 0'}}>{t.myHand}</h4>
-                <div className="card-row">
-                   {myPlayer?.hand.map(card => {
-                       const visual = getCardVisual(card, language);
-                       return <button key={card.id} className={`playing-card hand-card ${selectedCardIds.includes(card.id) ? 'selected-card' : ''}`} onClick={() => handleHandClick(card)} disabled={!isMyTurn} style={{backgroundColor: visual.color}}>
-                           <div className="card-label">{visual.label}</div>
-                           {visual.icon ? <visual.icon size={24} /> : <div style={{fontSize:28}}>{visual.emoji}</div>}
-                           <div className="card-bottom-value">{card.value || ''}</div>
-                       </button>
-                   })}
-                </div>
-             </div>
-             <div style={{marginTop: '20px', height: '50px'}}>
-               {selectedCardIds.length > 0 && (selectedType === 'number' || selectedType === 'jester') && (
-                 <button onClick={() => playMove(null)} className="start-btn" style={{backgroundColor: '#2196F3', width: '250px'}}>
-                   {selectedType === 'jester' ? t.playJester : t.playNumbers}
-                 </button>
+                  })() : <div className="empty-slot">{t.empty}</div>}
+              </div>
+            </div>
+          </div>
+
+          <div className={`my-area-container ${isMyTurn ? 'active-turn' : ''}`}>
+             <div className="my-area">
+               <div className="mobile-toggle-handle" onClick={() => setIsHandOpen(!isHandOpen)}>
+                  {isHandOpen ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+               </div>
+               
+               {/* MINIMIZED VIEW LOGIC */}
+               <div className={!isHandOpen ? 'minimized-content' : ''} style={{display: !isHandOpen ? 'none' : 'block'}}>
+                 <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                     <h3>{myPlayer?.name} - {t.score}: {myPlayer?.score}</h3>
+                     {gameState.started && <button className="btn-advisor" onClick={askAdvisor} disabled={!isMyTurn}><ScrollText size={16} /> {isKidMode ? t.kidAdvisor : t.advisorBtn}</button>}
+                 </div>
+                 <div>
+                    <h4 style={{margin: '5px 0'}}>{t.myQueens}</h4>
+                    <div className="card-row">
+                       {myPlayer?.queensAwake.length > 0 ? myPlayer.queensAwake.map(q => {
+                           const visual = getCardVisual(q, language);
+                           return <div key={q.id} className="playing-card queen" style={{backgroundColor: visual.color}} onClick={() => askLore(visual.label)}>
+                               <div className="card-label">{visual.label}</div><div className="card-emoji">{visual.emoji}</div><div className="card-bottom-value">{q.value}</div>
+                           </div>
+                       }) : <span style={{color: '#999'}}>{t.noQueensYet}</span>}
+                    </div>
+                 </div>
+                 <div>
+                    <h4 style={{margin: '10px 0 5px 0'}}>{t.myHand}</h4>
+                    <div className="card-row">
+                       {myPlayer?.hand.map(card => {
+                           const visual = getCardVisual(card, language);
+                           return <button key={card.id} className={`playing-card hand-card ${selectedCardIds.includes(card.id) ? 'selected-card' : ''}`} onClick={() => handleHandClick(card)} disabled={!isMyTurn} style={{backgroundColor: visual.color}}>
+                               <div className="card-label">{visual.label}</div>
+                               {visual.icon ? <visual.icon size={24} /> : <div style={{fontSize:28}}>{visual.emoji}</div>}
+                               <div className="card-bottom-value">{card.value || ''}</div>
+                           </button>
+                       })}
+                    </div>
+                 </div>
+                 <div style={{marginTop: '20px', height: '50px'}}>
+                   {selectedCardIds.length > 0 && (selectedType === 'number' || selectedType === 'jester') && (
+                     <button onClick={() => playMove(null)} className="start-btn" style={{backgroundColor: '#2196F3', width: '250px'}}>
+                       {selectedType === 'jester' ? t.playJester : t.playNumbers}
+                     </button>
+                   )}
+                 </div>
+               </div>
+               
+               {/* HEADER ONLY WHEN MINIMIZED */}
+               {!isHandOpen && (
+                  <div style={{textAlign: 'center', padding: '10px', color: '#666', fontSize: '0.9rem'}} onClick={() => setIsHandOpen(true)}>
+                    Tap to show hand ({myPlayer?.hand.length} cards)
+                  </div>
                )}
              </div>
           </div>
@@ -1043,6 +1237,28 @@ export default function App() {
               {aiLoading ? <div style={{padding:20}}><Loader2 className="animate-spin" size={32} style={{margin:'0 auto'}}/> {t.aiThinking}</div> : <div className="advisor-text">"{aiContent}"</div>}
             </div>
           </div>
+      )}
+
+      {/* Mobile Menu Overlay */}
+      {isMenuOpen && (
+        <div className="modal-overlay" onClick={() => setIsMenuOpen(false)}>
+          <div className="bg-white absolute top-0 right-0 h-full w-64 shadow-xl p-6" onClick={e => e.stopPropagation()}>
+             <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold">{t.appTitle}</h2>
+                <button onClick={() => setIsMenuOpen(false)}><X /></button>
+             </div>
+             <div className="flex flex-col gap-4">
+                <button onClick={() => { setIsMenuOpen(false); handleLogout(); }} className="flex items-center gap-2 p-3 bg-gray-100 rounded-lg hover:bg-gray-200 text-left">
+                   <LogOut size={20} />
+                   <span>{t.logout}</span>
+                </button>
+                <button onClick={() => { setIsMenuOpen(false); handleTerminate(); }} className="flex items-center gap-2 p-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-left">
+                   <Trash2 size={20} />
+                   <span>{t.terminate}</span>
+                </button>
+             </div>
+          </div>
+        </div>
       )}
     </div>
   );

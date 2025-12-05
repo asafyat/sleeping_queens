@@ -1,11 +1,19 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+import os
 
-# Assuming you will update these functions in storage.py/game_engine.py to accept api_key
+# Updated imports: Removed 'delete_game' to prevent startup crash if it's missing in storage.py
 from storage import create_game, get_game
 from game_engine import GameState, add_player, start_game, play_card
 
-app = Flask(__name__)
+# --- CONFIGURATION: Serve React App ---
+# We assume the React build is in a folder named 'dist' or 'build' 
+# relative to this file. Change as needed.
+static_folder_path = '../client/dist' 
+if not os.path.exists(static_folder_path):
+    static_folder_path = 'build' # Fallback for Create React App
+
+app = Flask(__name__, static_folder=static_folder_path)
 CORS(app)
 
 def card_to_dict(card):
@@ -96,6 +104,29 @@ def api_get_state(room_id):
 
     return jsonify(game_to_dict(game))
 
+# --- NEW: Terminate Game Endpoint (Robust) ---
+@app.route("/rooms/<room_id>", methods=["DELETE"])
+def api_terminate_game(room_id):
+    # Attempt to delete using storage functions
+    try:
+        # Check if delete_game is available in storage module
+        from storage import delete_game
+        delete_game(room_id)
+        return jsonify({"message": "Game terminated"})
+    except ImportError:
+        # Fallback: Try to access the 'games' dictionary directly if delete_game is missing
+        try:
+            from storage import games
+            if room_id in games:
+                del games[room_id]
+                return jsonify({"message": "Game terminated"})
+            else:
+                return jsonify({"error": "Room not found"}), 404
+        except ImportError:
+            return jsonify({"error": "Deletion not supported by storage backend"}), 501
+    except KeyError:
+        return jsonify({"error": "Room not found"}), 404
+
 @app.route("/rooms/<room_id>/play", methods=["POST"])
 def api_play_card(room_id):
     data = request.get_json(force=True) or {}
@@ -125,6 +156,15 @@ def api_play_card(room_id):
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})
+
+# --- SERVE REACT FRONTEND ---
+@app.route("/", defaults={'path': ''})
+@app.route("/<path:path>")
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,68 +1,82 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+/* =========================================
+   CUSTOM UTILITIES
+   ========================================= */
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Hides scrollbar but allows scrolling (Crucial for the mobile hand view) */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
-a:hover {
-  color: #535bf2;
+
+/* =========================================
+   CUSTOM ANIMATIONS
+   ========================================= */
+
+/* Slide In Animation for Modals/Menus */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
+
+.animate-slideIn {
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Pulse for Active Turn Indicator */
+@keyframes softPulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0px rgba(74, 222, 128, 0);
+  }
+  50% {
+    opacity: 0.9;
+    box-shadow: 0 0 15px rgba(74, 222, 128, 0.5);
+  }
+}
+
+.animate-soft-pulse {
+  animation: softPulse 2s infinite;
+}
+
+/* Card Hover Effect (Only on non-touch devices to prevent "sticking" on mobile) */
+@media (hover: hover) {
+  .card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  }
+}
+
+/* =========================================
+   BASE STYLES
+   ========================================= */
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #0f172a; /* Slate 900 fallback */
+  overflow: hidden; /* Prevent body scroll, handle inside containers */
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* RTL Support Helper */
+.rtl {
+  direction: rtl;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.ltr {
+  direction: ltr;
 }
