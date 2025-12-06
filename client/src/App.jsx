@@ -23,6 +23,7 @@ import {
   Users
 } from 'lucide-react';
 
+import './App.css';
 // ==========================================
 // 0. CONFIGURATION
 // ==========================================
@@ -33,128 +34,8 @@ const USE_MOCK_API = false;
 // ==========================================
 // 1. LOCALIZATION DICTIONARY
 // ==========================================
-const TEXTS = {
-  he: {
-    appTitle: "מלכות ישנות",
-    kidTitle: "הממלכה הקסומה",
-    lobbySubtitle: "משחק קלפים אסטרטגי",
-    kidSubtitle: "בואו להעיר את המלכות!",
-    enterName: "הכנס שם",
-    kidName: "איך קוראים לך?",
-    createGame: "צור משחק חדש",
-    kidCreate: "התחל משחק חדש! 🚀",
-    joinGame: "הצטרף לחדר 🚀",
-    kidJoin: "הצטרף לחדר 🚪",
-    roomId: "מספר החדר",
-    pasteRoom: "הדבק מספר חדר...",
-    orJoin: "או הצטרף לחדר קיים",
-    availableRooms: "חדרים פעילים",
-    noRooms: "אין חדרים פעילים כרגע",
-    refresh: "רענן",
-    room: "חדר",
-    yourTurn: "🟢 תורך!",
-    waiting: "🔴 מחכים...",
-    notStarted: "ממתין להתחלה...",
-    startGame: "התחל משחק",
-    lastAction: "מה קרה:",
-    cards: "קלפים",
-    score: "נקודות",
-    noQueens: "אין מלכות",
-    sleepingQueens: "מלכות ישנות",
-    discardPile: "ערימת זריקה",
-    empty: "ריק",
-    myQueens: "המלכות שלי:",
-    myHand: "היד שלי:",
-    noQueensYet: "אין לך מלכות עדיין",
-    selectQueen: "(בחר מלכה!)",
-    roseBonus: "🌹 בונוס ורד! בחר עוד אחת! 🌹",
-    advisorBtn: "היועץ המלכותי",
-    kidAdvisor: "שאל את הפיה",
-    playJester: "הפעל ליצן 🃏",
-    playNumbers: "זרוק מספרים",
-    gameOver: "המשחק נגמר!",
-    winner: "המנצח הוא",
-    playAgain: "שחק שוב",
-    loading: "טוען...",
-    reconnecting: "מתחבר מחדש למשחק...",
-    toggleLang: "Switch to English 🇺🇸",
-    kidMode: "מצב ילדים 🎈",
-    normalMode: "מצב רגיל 👔",
-    aiThinking: "מתייעץ עם הכוכבים...",
-    enterKey: "מפתח API (עבור ה-AI)",
-    saveKey: "שמור מפתח",
-    apiKeyMissing: "חסר מפתח API. נא להזין אותו בהגדרות.",
-    logout: "התנתק",
-    terminate: "סיים משחק (לכולם)",
-    cardLabels: {
-      king: "מלך", knight: "אביר", potion: "שיקוי", dragon: "דרקון", wand: "שרביט", jester: "ליצן", number: "מספר"
-    },
-    queenNames: {
-      Rose: "וורדים", Dog: "כלבים", Cat: "חתולים", Sunflower: "חמניות", Rainbow: "קשת", 
-      Moon: "ירח", Star: "כוכבים", Heart: "לבבות", Pancake: "פנקייק", IceCream: "גלידה", Fire: "אש", Book: "ספרים"
-    }
-  },
-  en: {
-    appTitle: "Sleeping Queens",
-    kidTitle: "Magic Kingdom",
-    lobbySubtitle: "Strategic Card Game",
-    kidSubtitle: "Let's wake the queens!",
-    enterName: "Enter Name",
-    kidName: "What's your name?",
-    createGame: "Create New Game",
-    kidCreate: "Start New Game! 🚀",
-    joinGame: "Join Room 🚀",
-    kidJoin: "Enter Room 🚪",
-    roomId: "Room ID",
-    pasteRoom: "Paste Room ID...",
-    orJoin: "OR Join Existing",
-    availableRooms: "Available Rooms",
-    noRooms: "No active rooms found",
-    refresh: "Refresh",
-    room: "Room",
-    yourTurn: "🟢 Your Turn!",
-    waiting: "🔴 Waiting...",
-    notStarted: "Not Started...",
-    startGame: "Start Game",
-    lastAction: "Last Action:",
-    cards: "Cards",
-    score: "Score",
-    noQueens: "No Queens",
-    sleepingQueens: "Sleeping Queens",
-    discardPile: "Discard Pile",
-    empty: "Empty",
-    myQueens: "My Queens:",
-    myHand: "My Hand:",
-    noQueensYet: "You have no queens yet",
-    selectQueen: "(Select a Queen!)",
-    roseBonus: "🌹 ROSE BONUS! Pick another! 🌹",
-    advisorBtn: "Royal Advisor",
-    kidAdvisor: "Ask Fairy",
-    playJester: "Play Jester 🃏",
-    playNumbers: "Discard Numbers",
-    gameOver: "GAME OVER!",
-    winner: "Winner is",
-    playAgain: "Play Again",
-    loading: "Loading...",
-    reconnecting: "Reconnecting to game...",
-    toggleLang: "עבור לעברית 🇮🇱",
-    kidMode: "Kid Mode 🎈",
-    normalMode: "Normal Mode 👔",
-    aiThinking: "Consulting the stars...",
-    enterKey: "Gemini API Key (for AI)",
-    saveKey: "Save Key",
-    apiKeyMissing: "API Key missing. Please enter it in settings.",
-    logout: "Logout",
-    terminate: "Terminate Game",
-    cardLabels: {
-      king: "King", knight: "Knight", potion: "Potion", dragon: "Dragon", wand: "Wand", jester: "Jester", number: "Number"
-    },
-    queenNames: {
-      Rose: "Rose", Dog: "Dog", Cat: "Cat", Sunflower: "Sunflower", Rainbow: "Rainbow", 
-      Moon: "Moon", Star: "Star", Heart: "Heart", Pancake: "Pancake", IceCream: "Ice Cream", Fire: "Fire", Book: "Book"
-    }
-  }
-};
+import { TEXTS } from './utils/translation.js';
+
 
 // ==========================================
 // 2. GEMINI API INTEGRATION
@@ -186,240 +67,7 @@ const callGemini = async (prompt, apiKey) => {
 // ==========================================
 // 3. MOCK SERVER (Fallback)
 // ==========================================
-class MockGameEngine {
-  constructor() {
-    this.reset();
-  }
-
-  reset(apiKey = null) {
-    this.id = Math.random().toString(36).substr(2, 9);
-    this.players = {};
-    this.deck = this.createDeck();
-    this.discardPile = [];
-    this.queensSleeping = this.createQueens();
-    this.queensAwake = {}; 
-    this.turnPlayerId = null;
-    this.started = false;
-    this.lastMessage = { key: 'created', params: {} };
-    this.winnerId = null;
-    this.pendingRoseWake = false;
-    this.apiKey = apiKey; 
-  }
-
-  createQueens() {
-    const names = ["Rose", "Dog", "Cat", "Sunflower", "Rainbow", "Moon", "Star", "Heart", "Pancake", "Ice Cream", "Fire", "Book"];
-    const values = [5, 15, 15, 10, 10, 10, 10, 15, 15, 20, 20, 10];
-    return names.map((name, i) => ({ id: `q-${i}`, type: 'queen', name: name, value: values[i] })).sort(() => Math.random() - 0.5);
-  }
-
-  createDeck() {
-    let cards = [];
-    const add = (t, c) => { for(let i=0; i<c; i++) cards.push({ id: `${t}-${Math.random().toString(36).substr(2,5)}`, type: t, value: 0 }) };
-    add('king', 8); add('knight', 4); add('potion', 4); add('dragon', 3); add('wand', 3); add('jester', 4);
-    for(let v=1; v<=10; v++) { for(let i=0; i<4; i++) cards.push({ id: `n-${v}-${i}`, type: 'number', value: v }); }
-    return cards.sort(() => Math.random() - 0.5);
-  }
-
-  addPlayer(name) {
-    const id = Math.random().toString(36).substr(2, 9);
-    this.players[id] = { id, name, hand: [], score: 0 };
-    this.queensAwake[id] = [];
-    return { playerId: id };
-  }
-
-  drawCard(playerId, count = 1) {
-    for (let i = 0; i < count; i++) {
-      if (this.deck.length === 0) {
-        if (this.discardPile.length === 0) break;
-        this.deck = this.discardPile;
-        this.discardPile = [];
-        this.deck.sort(() => Math.random() - 0.5);
-      }
-      if (this.deck.length > 0) {
-        this.players[playerId].hand.push(this.deck.pop());
-      }
-    }
-  }
-
-  startGame() {
-    if (Object.keys(this.players).length < 2) throw new Error("Need at least 2 players");
-    this.deck = this.deck.filter(c => c.type !== 'queen');
-    Object.keys(this.players).forEach(pid => this.drawCard(pid, 5));
-    this.turnPlayerId = Object.keys(this.players)[0];
-    this.started = true;
-    this.lastMessage = { key: 'started', params: { player: this.players[this.turnPlayerId].name } };
-    return this.getState();
-  }
-
-  nextTurn() {
-    const pids = Object.keys(this.players);
-    const idx = pids.indexOf(this.turnPlayerId);
-    this.turnPlayerId = pids[(idx + 1) % pids.length];
-  }
-
-  cpuAutoPlay(lang = 'en') {
-    if (!this.started || this.winnerId) return;
-    const cpuId = this.turnPlayerId;
-    const cpu = this.players[cpuId];
-    if (!cpu || (!cpu.name.toUpperCase().includes("CPU") && !cpu.name.includes("מחשב"))) return; 
-
-    const king = cpu.hand.find(c => c.type === 'king');
-    if (king && this.queensSleeping.length > 0) { this.playCard(cpuId, [king.id], this.queensSleeping[0].id, lang); return; }
-    
-    const knight = cpu.hand.find(c => c.type === 'knight');
-    const oppId = Object.keys(this.queensAwake).find(pid => pid !== cpuId && this.queensAwake[pid].length > 0);
-    if (knight && oppId) { this.playCard(cpuId, [knight.id], this.queensAwake[oppId][0].id, lang); return; }
-
-    const discard = cpu.hand[0];
-    if (discard) this.finishTurn(cpuId, [discard], { key: 'discard', params: { player: cpu.name, card: discard.type } }, false);
-  }
-
-  playCard(playerId, cardIds, targetCardId, lang = 'en') {
-    const player = this.players[playerId];
-    
-    if (this.pendingRoseWake) {
-      const qIdx = this.queensSleeping.findIndex(q => q.id === targetCardId);
-      if (qIdx === -1) throw new Error("Select a sleeping queen for bonus!");
-      const queen = this.queensSleeping.splice(qIdx, 1)[0];
-      this.queensAwake[playerId].push(queen);
-      this.pendingRoseWake = false;
-      this.finishTurn(playerId, [], { key: 'roseWake', params: { player: player.name, queen: queen.name } });
-      return this.getState();
-    }
-
-    const cards = player.hand.filter(c => cardIds.includes(c.id));
-    if (cards.length === 0) throw new Error("Cards not in hand");
-
-    const type = cards[0].type;
-    let msgObj = {};
-    let extraTurn = false;
-
-    if (type === 'number') {
-      msgObj = { key: 'discardNums', params: { player: player.name, values: cards.map(c=>c.value).join(', ') } };
-    } else if (type === 'king') {
-      const qIdx = this.queensSleeping.findIndex(q => q.id === targetCardId);
-      if (qIdx === -1) throw new Error("Select a sleeping queen!");
-      const queen = this.queensSleeping.splice(qIdx, 1)[0];
-      this.queensAwake[playerId].push(queen);
-      msgObj = { key: 'woke', params: { player: player.name, queen: queen.name } };
-      if (queen.name === "Rose") this.pendingRoseWake = true;
-    } else if (type === 'knight') {
-      let victimId = null, qIdx = -1;
-      Object.entries(this.queensAwake).forEach(([pid, qs]) => {
-        if (pid !== playerId) {
-          const idx = qs.findIndex(q => q.id === targetCardId);
-          if (idx !== -1) { victimId = pid; qIdx = idx; }
-        }
-      });
-      if (victimId) {
-        const victim = this.players[victimId];
-        const dragonIdx = victim.hand.findIndex(c => c.type === 'dragon');
-        if (dragonIdx !== -1) {
-            const dragon = victim.hand.splice(dragonIdx, 1)[0];
-            this.discardPile.push(dragon);
-            this.drawCard(victimId, 1);
-            msgObj = { key: 'blockSteal', params: { attacker: player.name, defender: victim.name } };
-        } else {
-            const queen = this.queensAwake[victimId].splice(qIdx, 1)[0];
-            this.queensAwake[playerId].push(queen);
-            msgObj = { key: 'stole', params: { player: player.name, queen: queen.name } };
-        }
-      }
-    } else if (type === 'potion') {
-       let victimId = null, qIdx = -1;
-       Object.entries(this.queensAwake).forEach(([pid, qs]) => {
-         if (pid !== playerId) {
-           const idx = qs.findIndex(q => q.id === targetCardId);
-           if (idx !== -1) { victimId = pid; qIdx = idx; }
-         }
-       });
-       if (victimId) {
-         const victim = this.players[victimId];
-         const wandIdx = victim.hand.findIndex(c => c.type === 'wand');
-         if (wandIdx !== -1) {
-           const wand = victim.hand.splice(wandIdx, 1)[0];
-           this.discardPile.push(wand);
-           this.drawCard(victimId, 1);
-           msgObj = { key: 'blockSleep', params: { attacker: player.name, defender: victim.name } };
-         } else {
-           const queen = this.queensAwake[victimId].splice(qIdx, 1)[0];
-           this.queensSleeping.push(queen);
-           msgObj = { key: 'slept', params: { player: player.name, queen: queen.name } };
-         }
-       }
-    } else if (type === 'jester') {
-      if(this.deck.length === 0 && this.discardPile.length > 0) {
-         this.deck = this.discardPile; this.discardPile = []; this.deck.sort(() => Math.random()-0.5);
-      }
-      if(this.deck.length === 0) {
-        msgObj = { key: 'jesterEmpty', params: {} };
-      } else {
-        const revealed = this.deck.pop();
-        if (revealed.type !== 'number') {
-          player.hand.push(revealed);
-          extraTurn = true;
-          msgObj = { key: 'jesterMagic', params: { player: player.name, card: revealed.type } };
-        } else {
-          this.discardPile.push(revealed);
-          const pids = Object.keys(this.players);
-          const currIdx = pids.indexOf(playerId);
-          const targetIdx = (currIdx + revealed.value - 1) % pids.length;
-          const targetPid = pids[targetIdx];
-          const targetName = this.players[targetPid].name;
-          if (this.queensSleeping.length > 0) {
-            const queen = this.queensSleeping.shift();
-            this.queensAwake[targetPid].push(queen);
-            msgObj = { key: 'jesterWoke', params: { player: player.name, value: revealed.value, target: targetName, queen: queen.name } };
-          } else {
-            msgObj = { key: 'jesterNothing', params: { player: player.name, value: revealed.value, target: targetName } };
-          }
-        }
-      }
-    } else {
-        // Fallback for simple discard
-        msgObj = { key: 'discard', params: { player: player.name, card: type } };
-    }
-    this.finishTurn(playerId, cards, msgObj, extraTurn);
-    return this.getState();
-  }
-
-  finishTurn(playerId, cardsPlayed, msgObj, extraTurn) {
-    const player = this.players[playerId];
-    cardsPlayed.forEach(c => {
-      const idx = player.hand.findIndex(h => h.id === c.id);
-      if(idx!==-1) player.hand.splice(idx,1);
-      this.discardPile.push(c);
-    });
-    this.drawCard(playerId, 5 - player.hand.length);
-    const score = this.queensAwake[playerId].reduce((a,b)=>a+b.value,0);
-    const count = this.queensAwake[playerId].length;
-    player.score = score;
-    if (score >= 50 || count >= 5) {
-      this.winnerId = playerId;
-      this.lastMessage = { key: 'win', params: { player: player.name } };
-    } else {
-      this.lastMessage = msgObj;
-      if (!this.pendingRoseWake && !extraTurn) this.nextTurn();
-    }
-  }
-
-  getState() {
-    return {
-      id: this.id,
-      started: this.started,
-      lastMessage: this.lastMessage,
-      turnPlayerId: this.turnPlayerId,
-      winnerId: this.winnerId,
-      pendingRoseWake: this.pendingRoseWake,
-      discardPile: this.discardPile.slice(-1), 
-      queensSleeping: this.queensSleeping,
-      players: Object.values(this.players).map(p => ({ ...p, queensAwake: this.queensAwake[p.id] || [] })),
-      deckSize: this.deck.length,
-      apiKey: this.apiKey // Return API Key to clients
-    };
-  }
-}
-const mockServer = new MockGameEngine();
+import { mockServer } from './services/gameEngine.js';
 
 // ==========================================
 // 4. HELPERS
@@ -507,108 +155,6 @@ const getCardVisual = (card, lang) => {
   }
 };
 
-const styles = `
-* { box-sizing: border-box; }
-body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow-x: hidden; }
-#root { width: 100%; height: 100%; margin: 0; padding: 0; text-align: center; }
-.app-container { height: 100dvh; display: flex; flex-direction: column; background: var(--bg-gradient); overflow: hidden; }
-.app-background { min-height: 100vh; width: 100%; display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
-.theme-default { --bg-gradient: linear-gradient(135deg, #2c3e50 0%, #4a148c 100%); direction: ltr; }
-.theme-default.rtl { direction: rtl; }
-.theme-kid { --bg-gradient: linear-gradient(180deg, #87CEEB 0%, #E0F7FA 100%); color: #000; font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif; }
-.theme-kid.rtl { direction: rtl; }
-.lobby-card { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 90%; max-width: 450px; text-align: center; border: 3px solid #FFD700; position: relative; overflow: hidden; margin: 0 auto; margin-top: 5vh; max-height: 90vh; overflow-y: auto; }
-.theme-kid .lobby-card { border: 5px solid #FF69B4; border-radius: 30px; }
-.lobby-title { color: #4a148c; font-size: 2.5rem; margin: 0 0 10px 0; }
-.lobby-subtitle { color: #666; margin-bottom: 30px; font-size: 1.1rem; }
-.input-group { margin-bottom: 15px; text-align: left; }
-.rtl .input-group { text-align: right; }
-.styled-input { width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; transition: all 0.3s; background: #f9f9f9; }
-.styled-input:focus { border-color: #4a148c; outline: none; }
-.action-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; transition: transform 0.1s; margin-bottom: 10px; }
-.action-btn:active { transform: scale(0.98); }
-.btn-create { background: linear-gradient(45deg, #FFD700, #FFA000); color: #3e2723; }
-.btn-join { background: linear-gradient(45deg, #9C27B0, #673AB7); color: white; }
-.btn-advisor { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
-.btn-bard { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #880e4f; padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid #ffc1e3; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-.btn-spy { background: #333; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid #666; cursor: pointer; position: absolute; top: -5px; right: -5px; z-index: 20; }
-.divider { display: flex; align-items: center; text-align: center; color: #888; margin: 20px 0; font-size: 0.9rem; }
-.divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #ddd; }
-.divider::before { margin-right: 10px; }
-.divider::after { margin-left: 10px; }
-
-/* ROOM LIST */
-.rooms-list { margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; }
-.rooms-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: bold; color: #555; }
-.room-item { background: #f9f9f9; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
-.room-item:hover { border-color: #4a148c; background: #f3e5f5; }
-.room-id { font-family: monospace; font-weight: bold; color: #333; }
-.room-status { font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; background: #ddd; }
-.room-status.active { background: #c8e6c9; color: #2e7d32; }
-
-/* GAME STYLES */
-.game-layout { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-.top-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.9); padding: 10px 15px; border-bottom: 2px solid rgba(0,0,0,0.1); z-index: 20; }
-.game-scroll-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
-.start-btn { background-color: #4CAF50; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
-
-/* COMPONENTS */
-.opponents { display: flex; justify-content: center; gap: 15px; background: rgba(255,255,255,0.8); padding: 15px; border-radius: 12px; flex-wrap: wrap; width: 100%; max-width: 800px; }
-.opponent-card { border: 2px solid transparent; padding: 10px 15px; background: white; min-width: 120px; border-radius: 8px; position: relative; transition: all 0.3s ease; }
-.opponent-card.current-turn { border-color: #10B981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); background: #ecfdf5; transform: scale(1.02); }
-
-.table-center { display: flex; justify-content: space-around; align-items: flex-start; padding: 25px; background-color: rgba(255,255,255,0.6); border-radius: 15px; flex-wrap: wrap; gap: 30px; width: 100%; max-width: 1000px; }
-.sleeping-queens { flex: 2; min-width: 300px; }
-.discard-pile { flex: 1; min-width: 120px; display: flex; flex-direction: column; align-items: center; }
-
-/* MY AREA - STICKY FOOTER */
-.my-area-container { 
-  background: white; 
-  border-top: 4px solid #ddd; 
-  box-shadow: 0 -5px 25px rgba(0,0,0,0.2); 
-  z-index: 30; 
-  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-  flex-shrink: 0; /* Prevent shrinking */
-  position: relative;
-}
-.my-area { padding: 15px; padding-bottom: max(15px, env(safe-area-inset-bottom)); }
-.my-area.minimized { transform: translateY(calc(100% - 50px)); } 
-
-.active-turn .my-area-container { border-top-color: #2196F3; }
-.theme-kid .my-area-container { border-top: 10px solid #76ff03; border-radius: 20px 20px 0 0; }
-
-.card-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-.playing-card { width: 80px; height: 115px; border: 1px solid #bbb; border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; background: white; cursor: pointer; transition: all 0.2s; padding: 5px; box-shadow: 2px 4px 8px rgba(0,0,0,0.15); position: relative; user-select: none; }
-.playing-card:hover:not(:disabled) { transform: translateY(-8px); z-index: 10; }
-.card-label { font-size: 10px; font-weight: bold; text-transform: uppercase; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
-.card-emoji { font-size: 38px; line-height: 1; }
-.card-bottom-value { font-size: 16px; font-weight: bold; align-self: flex-end; margin-right: 4px; }
-.card-back { width: 60px; height: 85px; background: linear-gradient(135deg, #673AB7, #512DA8); color: white; display: flex; justify-content: center; align-items: center; border-radius: 8px; border: 2px solid white; cursor: pointer; font-size: 28px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); } 
-.queen { border-color: #B8860B; background-color: #fffde7; }
-.selected-card { border: 3px solid #2196F3; background-color: #e3f2fd; transform: translateY(-12px) !important; }
-.clickable-target { cursor: pointer; box-shadow: 0 0 15px #FFD700; animation: pulse 1.5s infinite; border-color: #FFD700; }
-.message-bar { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; padding: 10px; background: #e3f2fd; border-radius: 8px; width: 90%; max-width: 600px; }
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(2px); }
-.modal-content { background: white; padding: 25px; border-radius: 16px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.4); border: 2px solid #764ba2; position: relative; }
-.advisor-text { font-style: italic; color: #4a148c; line-height: 1.6; margin: 15px 0; background: #f3e5f5; padding: 15px; border-radius: 8px; }
-.rtl .advisor-text { direction: rtl; }
-.close-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; cursor: pointer; color: #666; }
-.rtl .close-btn { right: auto; left: 10px; }
-.toggle-kid-mode { position: absolute; top: 10px; left: 10px; background: white; border: 2px solid #333; border-radius: 20px; padding: 5px 10px; cursor: pointer; font-size: 0.9rem; z-index: 100; }
-.rtl .toggle-kid-mode { left: auto; right: 10px; }
-.toggle-lang { position: absolute; top: 10px; right: 10px; background: white; border: 2px solid #333; border-radius: 20px; padding: 5px 10px; cursor: pointer; font-size: 0.9rem; z-index: 100; }
-.rtl .toggle-lang { right: auto; left: 10px; }
-@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-.empty-slot { width: 80px; height: 115px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 10px; background: rgba(0,0,0,0.02); }
-
-/* MOBILE RESPONSIVE TWEAKS */
-@media (max-width: 768px) {
-  .playing-card { width: 55px; height: 80px; }
-  .card-back { width: 50px; height: 75px; font-size: 20px; }
-  .mobile-toggle-handle { position: absolute; top: -24px; left: 50%; transform: translateX(-50%); background: white; border: 1px solid #ccc; border-bottom: none; border-radius: 12px 12px 0 0; padding: 2px 25px; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; color: #666; z-index: 31; }
-}
-@media (min-width: 769px) { .mobile-toggle-handle { display: none; } }
-`;
 
 // ==========================================
 // 5. MAIN COMPONENT
@@ -869,6 +415,11 @@ export default function App() {
         ? ['rose-bonus-action'] 
         : selectedCardIds;
     const cardsToSend = gameState.pendingRoseWake ? [] : effectiveCardIds;
+    
+    if (window.innerWidth <= 768) {
+        setIsHandOpen(false); 
+    }
+    
 
     if (USE_MOCK_API) {
       try {
@@ -1011,6 +562,21 @@ export default function App() {
     setAiLoading(false);
   };
 
+  useEffect(() => {
+    if (!gameState || !playerId) return;
+
+    // Is it my turn now?
+    const isMyTurn = gameState.turnPlayerId === playerId;
+
+    if (isMyTurn) {
+      // It's my turn! Show me the cards automatically
+      setIsHandOpen(true);
+    } else {
+      // Not my turn. Minimize hand so I can see the board/opponents
+      setIsHandOpen(false);
+    }
+  }, [gameState?.turnPlayerId]); // Only run when the turn changes
+
   const handleHandClick = (card) => {
     if (gameState?.turnPlayerId !== playerId) return;
     const player = gameState.players.find(p => p.id === playerId);
@@ -1061,8 +627,7 @@ export default function App() {
 
 if (view === 'lobby') {
     return (
-        <div className={`app-container ${isKidMode ? 'theme-kid' : 'theme-default'} ${language === 'he' ? 'rtl' : ''}`}>
-            <style>{styles}</style>
+        <div className={`app-container ${isKidMode ? 'theme-kid' : 'theme-default'} ${language === 'he' ? 'rtl' : ''}`}>            
             <div className="lobby-card">
                 {/* --- TOGGLE BUTTONS (ADDED) --- */}
                 <button className="toggle-lang" onClick={toggleLanguage}>
@@ -1137,47 +702,28 @@ if (view === 'lobby') {
   if (!gameState) return <div className="app-container flex justify-center items-center"><Loader2 className="animate-spin"/> {t.loading}</div>;
 
   return (
-    <div className={`app-container ${isKidMode ? 'theme-kid' : 'theme-default'} ${language === 'he' ? 'rtl' : ''}`}>
-      <style>{styles}</style>
+    <div className={`app-container ${isKidMode ? 'theme-kid' : 'theme-default'} ${language === 'he' ? 'rtl' : ''}`}>      
       <div className="game-layout">
-          <div className="top-bar">
+            <div className="top-bar">
+             {/* Room ID */}
              <div>{t.room}: <strong>{gameState.id}</strong></div>
-             <div>{gameState.started ? (isMyTurn ? t.yourTurn : <span>{t.waiting} <span className="opacity-75">({turnPlayerName})</span></span>) : t.notStarted}</div>
+             
+             {/* Status Message */}
+             <div>
+                 {gameState.started 
+                    ? (isMyTurn ? <span style={{color: '#2e7d32', fontWeight: 'bold'}}>{t.yourTurn}</span> : <span>{t.waiting} <span className="opacity-75">({turnPlayerName})</span></span>) 
+                    : t.notStarted
+                 }
+             </div>
+
              <div className="flex items-center gap-2">
+                {/* Start Game Button (Keep this visible) */}
                 {!gameState.started && <button className="start-btn" onClick={startGame}>{t.startGame}</button>}
                 
-                {/* Desktop Buttons */}
-                <div className="hidden md:flex items-center gap-2">
-                    
-                  {/* --- NEW NICER SLIDING TOGGLE --- */}
-                  <div 
-                      className={`lang-switch-container ${language}`} 
-                      onClick={toggleLanguage} 
-                      title={t.toggleLang}
-                      role="button"
-                      tabIndex={0}
-                  >
-                      <div className="lang-switch-track">
-                          <span>EN</span>
-                          <span>עב</span>
-                      </div>
-                      <div className="lang-switch-slider">
-                          {language === 'he' ? '🇮🇱' : '🇺🇸'}
-                      </div>
-                  </div>
-                  {/* -------------------------------- */}
-
-                  <button onClick={handleLogout} className="p-2 bg-gray-200 rounded hover:bg-gray-300" title={t.logout}>
-                    <LogOut size={18} />
-                  </button>
-                  <button onClick={handleTerminate} className="p-2 bg-red-100 text-red-600 rounded hover:bg-red-200" title={t.terminate}>
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-
-                {/* Mobile Menu Button */}
-                <button onClick={() => setIsMenuOpen(true)} className="md:hidden p-2">
-                  <Menu size={24} />
+                {/* Menu Button (Now visible on ALL screens) */}
+                {/* I removed 'md:hidden' so it appears on Desktop too */}
+                <button onClick={() => setIsMenuOpen(true)} className="p-2" style={{background: 'none', border: 'none'}}>
+                    <Menu size={28} />
                 </button>
              </div>
           </div>
@@ -1253,18 +799,20 @@ if (view === 'lobby') {
                  </div>
                  <div>
                     <h4 style={{margin: '5px 0'}}>{t.myQueens}</h4>
-                    <div className="card-row">
+                    <div className="hand-row">
                        {myPlayer?.queensAwake.length > 0 ? myPlayer.queensAwake.map(q => {
                            const visual = getCardVisual(q, language);
                            return <div key={q.id} className="playing-card queen" style={{backgroundColor: visual.color}} onClick={() => askLore(visual.label)}>
-                               <div className="card-label">{visual.label}</div><div className="card-emoji">{visual.emoji}</div><div className="card-bottom-value">{q.value}</div>
+                               <div className="card-label">{visual.label}</div>
+                               <div className="card-emoji">{visual.emoji}</div>
+                               <div className="card-bottom-value">{q.value}</div>
                            </div>
-                       }) : <span style={{color: '#999'}}>{t.noQueensYet}</span>}
+                       }) : <span style={{color: '#999', fontSize: '0.8rem'}}>{t.noQueensYet}</span>}
                     </div>
                  </div>
                  <div>
                     <h4 style={{margin: '10px 0 5px 0'}}>{t.myHand}</h4>
-                    <div className="card-row">
+                    <div className="hand-row">
                        {myPlayer?.hand.map(card => {
                            const visual = getCardVisual(card, language);
                            return <button key={card.id} className={`playing-card hand-card ${selectedCardIds.includes(card.id) ? 'selected-card' : ''}`} onClick={() => handleHandClick(card)} disabled={!isMyTurn} style={{backgroundColor: visual.color}}>
@@ -1298,9 +846,8 @@ if (view === 'lobby') {
              </div>
           </div>
         </div>
-      ) : <div style={{textAlign:'center', marginTop:50}}>{t.loading}</div>}
 
-      {/* AI Modal */}
+      {/* MODALS */}
       {aiModalOpen && (
           <div className="modal-overlay" onClick={() => setAiModalOpen(false)}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -1316,32 +863,34 @@ if (view === 'lobby') {
           </div>
       )}
 
-      {/* Mobile Menu Overlay */}
       {isMenuOpen && (
         <div className="modal-overlay" onClick={() => setIsMenuOpen(false)}>
           <div className="bg-white absolute top-0 right-0 h-full w-64 shadow-xl p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">{t.appTitle}</h2>
-                <button onClick={() => setIsMenuOpen(false)}><X /></button>
-            </div>
+            <div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold">{t.appTitle}</h2><button onClick={() => setIsMenuOpen(false)}><X /></button></div>
             <div className="flex flex-col gap-4">
-                
-                {/* --- NEW LANGUAGE TOGGLE IN MENU --- */}
-                <button onClick={() => { setIsMenuOpen(false); toggleLanguage(); }} className="flex items-center gap-2 p-3 bg-blue-50 text-blue-800 rounded-lg hover:bg-blue-100 text-left">
-                  <span style={{fontSize: '1.2rem'}}>🌐</span>
-                  <span>{t.toggleLang}</span>
-                </button>
-                {/* ----------------------------------- */}
-
-                <button onClick={() => { setIsMenuOpen(false); handleLogout(); }} className="flex items-center gap-2 p-3 bg-gray-100 rounded-lg hover:bg-gray-200 text-left">
-                  <LogOut size={20} />
-                  <span>{t.logout}</span>
-                </button>
-                <button onClick={() => { setIsMenuOpen(false); handleTerminate(); }} className="flex items-center gap-2 p-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-left">
-                  <Trash2 size={20} />
-                  <span>{t.terminate}</span>
-                </button>
+                <button onClick={() => { setIsMenuOpen(false); toggleLanguage(); }} className="flex items-center gap-2 p-3 bg-blue-50 text-blue-800 rounded-lg hover:bg-blue-100 text-left"><span style={{fontSize: '1.2rem'}}>🌐</span><span>{t.toggleLang}</span></button>
+                <button onClick={() => { setIsMenuOpen(false); handleLogout(); }} className="flex items-center gap-2 p-3 bg-gray-100 rounded-lg hover:bg-gray-200 text-left"><LogOut size={20} /><span>{t.logout}</span></button>
+                <button onClick={() => { setIsMenuOpen(false); handleTerminate(); }} className="flex items-center gap-2 p-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-left"><Trash2 size={20} /><span>{t.terminate}</span></button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {gameState.winnerId && (
+        <div className="modal-overlay" style={{background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(5px)'}}>
+          <div className="modal-content" style={{border: '4px solid #FFD700', background: 'linear-gradient(to bottom, #fff, #fff8e1)'}}>
+             <div style={{fontSize: '60px', marginBottom: '10px'}}>🏆</div>
+             <h1 style={{color: '#F57C00', margin: '0 0 10px 0', fontSize: '2rem'}}>{t.gameOver}</h1>
+             <h2 style={{color: '#333', margin: '0 0 30px 0'}}>{t.winner}: <span style={{color: '#4a148c', fontWeight: 'bold'}}>{gameState.players.find(p => p.id === gameState.winnerId)?.name}</span></h2>
+             <div style={{marginBottom: '30px', textAlign: 'left', background: 'rgba(255,255,255,0.8)', padding: '15px', borderRadius: '10px'}}>
+                {gameState.players.map(p => (
+                    <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'5px 0', borderBottom:'1px solid #eee'}}><span>{p.name} {p.id === gameState.winnerId && '👑'}</span><span style={{fontWeight:'bold'}}>{p.score} pts</span></div>
+                ))}
+             </div>
+             <button className="action-btn" onClick={handleTerminate} style={{background: 'linear-gradient(45deg, #FF5252, #D32F2F)', color: 'white', fontWeight: 'bold', marginTop: '10px'}}>
+                <Trash2 size={18} style={{display: 'inline', marginRight: '5px', verticalAlign: 'text-bottom'}}/>{t.terminate}
+             </button>
+             <div style={{fontSize: '0.8rem', color: '#666', marginTop: '8px', opacity: 0.8}}>({language === 'he' ? 'פעולה זו תסיים את החדר לכולם' : 'This will close the room for everyone'})</div>
           </div>
         </div>
       )}
