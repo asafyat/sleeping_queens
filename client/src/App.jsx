@@ -134,39 +134,26 @@ const handleTerminate = async () => {
     if (view === 'lobby') fetchRooms();
   }, [view]);
 
-  // --- RECONNECTION LOGIC ---
+// --- RECONNECTION LOGIC ---
   useEffect(() => {
     const checkActiveSession = async () => {
       // Only check if we are in lobby and have saved data
       if (view === 'lobby' && roomId && playerId) {
-        if (USE_MOCK_API) {
-           // Mock server resets on reload, so reconnection usually fails unless we mock that too.
-           // For now, we skip auto-reconnect on mock to avoid confusion.
-        } else {
-           try {
-             // 1. Fetch Room State
-             // Add playerId param so server returns hands
-             const res = await fetch(`${API_URL}/rooms/${roomId}?playerId=${playerId}`);
-             if (res.ok) {
-               const data = await res.json();
-               // 2. Check if player exists in that room
-               if (data.players && data.players.find(p => p.id === playerId)) {
-                 setGameState(data);
-                 setView('game');
-                 // Optional: Refresh token logic if needed
-               } else {
-                 // Player not in room? Clear session
-                 clearSession();
-               }
-             } else if (res.status === 404) {
-               // Room deleted/expired
-               clearSession();
-             }
-           } catch (e) {
-             console.error("Auto-reconnect failed:", e);
-             // On network error, we might want to let them try manually or retry.
-             // For now, doing nothing lets them stay in lobby with filled fields.
+        try {
+           // 1. Ask API for current state
+           const data = await api.getGameState(roomId, playerId);
+           
+           // 2. Check if Game exists AND Player is actually in it
+           if (data && data.players && data.players.find(p => p.id === playerId)) {
+               setGameState(data);
+               setView('game');
+           } else {
+               // Game doesn't exist OR Player ID is invalid (e.g., server restart or mock reset)
+               clearSession(); 
            }
+        } catch (e) {
+           console.error("Reconnect failed:", e);
+           // On network error, we do nothing. The user stays in Lobby with their ID filled in.
         }
       }
     };
