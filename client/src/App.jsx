@@ -53,6 +53,7 @@ import { mockServer } from './services/gameEngine.js';
 
 import { translateMessage, getCardVisual } from './utils/formatters.js';
 
+import { api } from './services/api';
 
 // ==========================================
 // 5. MAIN COMPONENT
@@ -76,7 +77,7 @@ export default function App() {
   
   // New State for Rooms List
   const [roomsList, setRoomsList] = useState([]);
-  
+
   // --- GEMINI HANDLERS ---
   const { 
     aiModalOpen, setAiModalOpen, 
@@ -115,23 +116,9 @@ export default function App() {
     }
   };
 
-  const handleTerminate = async () => {
+const handleTerminate = async () => {
     if (confirm(t.terminate + "?")) {
-      if (!USE_MOCK_API && roomId) {
-        try {
-          const res = await fetch(`${API_URL}/rooms/${roomId}`, { method: 'DELETE' });
-          if (!res.ok) {
-            const data = await res.json().catch(() => ({}));
-            alert("Failed to terminate game on server: " + (data.error || res.statusText));
-            return; // Don't clear session if server fail
-          }
-        } catch(e) { 
-          console.error(e);
-          alert("Network error: Could not reach server to terminate game.");
-          return;
-        }
-      }
-      // Only clear if mock or success
+      await api.terminateGame(roomId);
       clearSession();
       setGameState(null);
       setView('lobby');
@@ -139,14 +126,8 @@ export default function App() {
   };
 
   const fetchRooms = async () => {
-    if (USE_MOCK_API) return;
-    try {
-        const res = await fetch(`${API_URL}/rooms`);
-        if (res.ok) {
-            const data = await res.json();
-            setRoomsList(data.rooms || []);
-        }
-    } catch (e) { console.error("Failed to fetch rooms", e); }
+    const rooms = await api.getRooms();
+    setRoomsList(rooms);
   };
 
   useEffect(() => {
@@ -194,157 +175,91 @@ export default function App() {
 
   // --- API CALLS ---
 
-  const fetchGameState = async () => {
-    if (USE_MOCK_API) {
-      const state = mockServer.getState();
-      setGameState(state);
-      if (state.apiKey && !apiKey) {
-        saveApiKey(state.apiKey);
-      }
-      return;
-    }
-    if (!roomId) return;
+ const fetchGameState = async () => {
+    if (!roomId && !USE_MOCK_API) return; // Note: You might need to import USE_MOCK_API or just rely on roomId check
     try {
-      // Add playerId param so server returns hands
-      const res = await fetch(`${API_URL}/rooms/${roomId}?playerId=${playerId}`);
-      if (res.status === 404) {
-        // Game over or server restart
-        alert("Game session lost. Returning to lobby.");
+      const data = await api.getGameState(roomId, playerId);
+      if (data === null) {
+        alert("Game session lost.");
         clearSession();
         setView('lobby');
         setGameState(null);
-        return;
+      } else {
+        setGameState(data);
+        if (data.apiKey && !apiKey) saveApiKey(data.apiKey);
       }
-      if (!res.ok) throw new Error("Network response was not ok");
-      const data = await res.json();
-      setGameState(data);
-      if (data.apiKey && !apiKey) {
-        saveApiKey(data.apiKey);
-      }
-    } catch (err) {
-      console.error('Error fetching state:', err);
-    }
+    } catch (err) { console.error('Error fetching state:', err); }
   };
 
-  const createGame = async () => {
-    if (USE_MOCK_API) {
-      mockServer.reset(apiKey);
-      const p = mockServer.addPlayer(playerName || (language==='he' ? "שחקן" : "Player"));
-      mockServer.addPlayer(language==='he' ? "מחשב" : "CPU"); 
-      setRoomId(mockServer.id);
-      setPlayerId(p.playerId);
-      setGameState(mockServer.getState());
-      setView('game');
-    } else {
-      try {
-        const res = await fetch(`${API_URL}/rooms`, { 
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ apiKey }) 
-        });
-        const data = await res.json();
+const createGame = async () => {
+    try {
+      const data = await api.createRoom(apiKey, playerName, language);
+      if (data.isMock) {
         setRoomId(data.roomId);
-        // We need player ID from joining, so we call joinGame next
-        // But wait, standard flow is: Create -> Get Room ID -> Join as player 1
-        await joinGame(data.roomId); 
-      } catch (err) {
-        setError('Failed to create game: ' + err.message);
+        setPlayerId(data.playerId);
+        setGameState(mockServer.getState());
+        setView('game');
+      } else {
+        setRoomId(data.roomId);
+        await joinGame(data.roomId);
       }
-    }
+    } catch (err) { setError('Failed to create: ' + err.message); }
   };
 
-  const joinGame = async (specificRoomId = null) => {
+const joinGame = async (specificRoomId = null) => {
     const roomToJoin = specificRoomId || roomId;
-    if (!roomToJoin || !playerName) {
-      setError('Must provide Room ID and Name');
-      return;
-    }
-
-    if (USE_MOCK_API) {
-      setPlayerId('simulated-join-id');
+    if (!roomToJoin || !playerName) { setError('Missing info'); return; }
+    
+    try {
+      const data = await api.joinRoom(roomToJoin, playerName);
+      setPlayerId(data.playerId);
+      setRoomId(roomToJoin);
+      saveSession(roomToJoin, data.playerId, playerName);
       setView('game');
-    } else {
-      try {
-        const res = await fetch(`${API_URL}/rooms/${roomToJoin}/join`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ name: playerName }),
-        });
-        
-        if (res.status === 404) {
-             alert("Room not found! The server might have restarted.");
-             setRoomId(''); 
-             return;
-        }
-
-        if (!res.ok) throw new Error('Room not found or full');
-        const data = await res.json();
-        
-        setPlayerId(data.playerId);
-        setRoomId(roomToJoin);
-        
-        // SAVE SESSION
-        saveSession(roomToJoin, data.playerId, playerName);
-
-        setView('game');
-        fetchGameState();
-      } catch (err) {
-        setError('Failed to join room: ' + err.message);
-      }
+      fetchGameState();
+    } catch (err) {
+      if (err.message === "404") { alert("Room not found!"); setRoomId(''); }
+      else setError('Join failed: ' + err.message);
     }
   };
 
   // ... rest of the component (startGame, playMove, AI handlers, render) ...
-  const startGame = async () => {
-    if (USE_MOCK_API) {
-      try { setGameState(mockServer.startGame()); } catch(e) { setError(e.message); }
-    } else {
-      try {
-        const res = await fetch(`${API_URL}/rooms/${roomId}/start`, { method: 'POST' });
-        const data = await res.json();
-        if (data.error) setError(data.error);
-        else setGameState(data);
-      } catch (err) { setError('Failed to start game'); }
+const startGame = async () => {
+    try {
+      // 1. The API service handles the logic (Mock or Real)
+      const data = await api.startGame(roomId);
+      
+      // 2. We just update the state with the result
+      setGameState(data);
+    } catch (err) {
+      // 3. Centralized error handling
+      setError(err.message || 'Failed to start game');
     }
   };
 
-  const playMove = async (targetId = null) => {
+const playMove = async (targetId = null) => {
     if (selectedCardIds.length === 0 && !gameState.pendingRoseWake) return;
-    const effectiveCardIds = (gameState.pendingRoseWake && selectedCardIds.length === 0) 
-        ? ['rose-bonus-action'] 
-        : selectedCardIds;
+    const effectiveCardIds = (gameState.pendingRoseWake && selectedCardIds.length === 0) ? ['rose-bonus-action'] : selectedCardIds;
     const cardsToSend = gameState.pendingRoseWake ? [] : effectiveCardIds;
 
-    if (window.innerWidth <= 768) {
-        setIsHandOpen(false); 
-    }
-    
+    // Mobile UI: Close hand immediately
+    if (window.innerWidth <= 768) setIsHandOpen(false);
 
-    if (USE_MOCK_API) {
-      try {
-        setGameState(mockServer.playCard(playerId, cardsToSend, targetId, language));
-        setSelectedCardIds([]);
-        if (!gameState.winnerId) {
-            setTimeout(() => {
-               mockServer.cpuAutoPlay(language);
-               setGameState(mockServer.getState());
-            }, 1500);
-        }
-      } catch (err) { alert(err.message); }
-    } else {
-      try {
-        const res = await fetch(`${API_URL}/rooms/${roomId}/play`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ playerId, cardIds: cardsToSend, targetCardId: targetId }),
-        });
-        const data = await res.json();
-        if (data.error) alert(data.error);
-        else {
-          setGameState(data);
-          setSelectedCardIds([]); 
-        }
-      } catch (err) { alert('Error playing move: ' + err.message); }
+    try {
+      const { state, isMock } = await api.playCard(roomId, playerId, cardsToSend, targetId, language);
+      setGameState(state);
+      setSelectedCardIds([]);
+
+      // Handle Mock CPU Turn
+      if (isMock && !state.winnerId) {
+        setTimeout(() => {
+           const cpuState = api.runCpuTurn(language);
+           setGameState(cpuState);
+        }, 1500);
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+      setIsHandOpen(true); // Re-open hand if move failed
     }
   };
 
