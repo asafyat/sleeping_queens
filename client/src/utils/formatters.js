@@ -66,6 +66,8 @@ export const getCardVisual = (card, lang) => {
     case 'wand': return { emoji: '🪄', color: '#F3E5F5', label: labels.wand, icon: Wand2 };
     case 'jester': return { emoji: '🃏', color: '#FFF3E0', label: labels.jester, icon: Sparkles };
     case 'number': return { emoji: card.value, color: '#E3F2FD', label: labels.number, icon: null };
+    
+    // 👇 THIS IS THE UPDATED BLOCK 👇
     case 'queen':
       let emoji = '👸';
       if (card.name === 'Rose') emoji = '🌹';
@@ -75,11 +77,23 @@ export const getCardVisual = (card, lang) => {
       else if (card.name === 'Moon') emoji = '🌙';
       else if (card.name === 'Heart') emoji = '❤️';
       else if (card.name === 'Star') emoji = '⭐';
+      else if (card.name === 'Pancake') emoji = '🥞';
+      else if (card.name === 'Ice Cream') emoji = '🍦';
+      else if (card.name === 'Fire') emoji = '🔥';
+      else if (card.name === 'Book') emoji = '📚';
       
       const localizedName = qNames[card.name] 
           ? (lang === 'he' ? `מלכת ה${qNames[card.name]}` : `${qNames[card.name]} Queen`)
           : card.name;
-      return { emoji, color: '#FCE4EC', label: localizedName.replace(' Queen', '').replace('מלכת ה', ''), icon: Crown };
+      
+      // CHANGE: icon is set to null, so the Emoji above will be displayed instead!
+      return { 
+          emoji, 
+          color: '#FCE4EC', 
+          label: localizedName.replace(' Queen', '').replace('מלכת ה', ''), 
+          icon: null 
+      }; 
+      
     default: return { emoji: '?', color: '#eee', label: card.type };
   }
 };
